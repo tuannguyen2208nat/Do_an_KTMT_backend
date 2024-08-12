@@ -7,4 +7,4 @@ const TemperatureSensor = new Schema({
     Date: { type: Date, required: true }
 })
 
-module.exports = mongoose.model('TemperatureSensor', TemperatureSensor);
+module.exports = mongoose.model('TemperatureSensor', TemperatureSensor, 'TemperatureSensor');

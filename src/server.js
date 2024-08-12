@@ -4,6 +4,7 @@ var express = require('express');
 
 const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
+const mqttClient = require('./config/mqttHelper');
 var usersRouter = require('./routes/userRoutes');
 
 
@@ -20,6 +21,8 @@ const hostname = process.env.HOST_NAME;
 configViewEngine(app)
 
 database.connect();
+mqttClient.connect();
+
 
 app.use('/', usersRouter);
 

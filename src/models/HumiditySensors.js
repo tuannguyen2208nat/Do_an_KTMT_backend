@@ -7,4 +7,4 @@ const HumiditySensor = new Schema({
     Date: { type: Date, required: true }
 })
 
-module.exports = mongoose.model('HumiditySensor', HumiditySensor);
+module.exports = mongoose.model('HumiditySensor', HumiditySensor, 'HumiditySensor');

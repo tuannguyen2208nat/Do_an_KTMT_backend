@@ -8,4 +8,4 @@ const Relay = new Schema({
     Date: { type: Date, required: true }
 })
 
-module.exports = mongoose.model('Relays', Relay);
+module.exports = mongoose.model('Relay', Relay, 'Relay');
