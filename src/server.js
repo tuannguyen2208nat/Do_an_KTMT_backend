@@ -2,7 +2,7 @@ require('dotenv').config()
 var createError = require('http-errors');
 var express = require('express');
 
-const configViewEngine = require('./config/viewEngine')
+const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
 var usersRouter = require('./routes/userRoutes');
 

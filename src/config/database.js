@@ -1,6 +1,6 @@
+require('dotenv').config()
 const mongoose = require('mongoose');
-
-const atlas = "mongodb+srv://DO_AN_KTMT:Doanktmt123.@cluster0.wsm9t.mongodb.net/myDB?retryWrites=true&w=majority&appName=Cluster0";
+const atlas = "mongodb+srv://" + process.env.DATABASE_NAME + ":" + process.env.DATABASE_PASSWORD + "@cluster0.wsm9t.mongodb.net/myDB";
 
 const connect = async () => {
     try {

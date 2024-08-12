@@ -1,7 +1,7 @@
 var express = require('express');
 var UserRouter = express.Router();
-const modelUser = require('../models/users');
-const Transporter = require('../config/mail');
+const modelUser = require('../models/Users');
+const Transporter = require('../config/email');
 const JWT = require('jsonwebtoken');
 const SECRET_KEY = "Namnv"
 

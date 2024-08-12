@@ -16,8 +16,6 @@ const Users = new Schema({
         type: String,
         required: true // Make password required
     }
-}, {
-    timestamps: true
 });
 
-module.exports = mongoose.model('user', Users);
+module.exports = mongoose.model('Users', Users);
