@@ -1,8 +1,8 @@
 const mqttClient = require('../services/mqtt');
 
 const connect = () => {
-    mqttClient.subscribeToFeed((topic, message) => {
-        console.log(`Received message from ${topic}: ${message}`);
+    mqttClient.subscribeToFeeds((feed, message) => {
+        console.log(`Data received from feed ${feed}: ${message}`);
     });
 }
 

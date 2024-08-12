@@ -23,11 +23,10 @@ configViewEngine(app)
 database.connect();
 mqttClient.connect();
 
-
 app.use('/', usersRouter);
 
 app.listen(port, hostname, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Listening on port ${port}`)
 });
 
 module.exports = app;
