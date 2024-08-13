@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 var express = require('express');
 var cors = require('cors');
 
@@ -7,9 +7,7 @@ const database = require('./config/database');
 const mqttClient = require('./config/mqttHelper');
 var usersRouter = require('./routes/userRoutes');
 
-
-
-const app = express()
+const app = express();
 
 app.use(express.json());
 app.use(cors());
@@ -20,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 const port = process.env.PORT || 3000;
 const hostname = process.env.HOST_NAME;
 
-configViewEngine(app)
+configViewEngine(app);
 
 database.connect();
 mqttClient.connect();
@@ -28,7 +26,7 @@ mqttClient.connect();
 app.use('/', usersRouter);
 
 app.listen(port, hostname, () => {
-  console.log(`Listening on port ${port}`)
+    console.log(`Listening on port ${port}`);
 });
 
 module.exports = app;

@@ -1,6 +1,11 @@
-require('dotenv').config()
+require('dotenv').config();
 const mongoose = require('mongoose');
-const atlas = "mongodb+srv://" + process.env.DATABASE_NAME + ":" + process.env.DATABASE_PASSWORD + "@cluster0.wsm9t.mongodb.net/myDB";
+const atlas =
+    'mongodb+srv://' +
+    process.env.DATABASE_NAME +
+    ':' +
+    process.env.DATABASE_PASSWORD +
+    '@cluster0.wsm9t.mongodb.net/myDB';
 
 const connect = async () => {
     try {

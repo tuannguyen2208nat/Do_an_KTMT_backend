@@ -9,18 +9,18 @@ const Users = new Schema({
     // },
     username: {
         type: String,
-        unique: true,  // Ensure username is unique
-        maxLength: 255
+        unique: true, // Ensure username is unique
+        maxLength: 255,
     },
     email: {
         type: String,
-        unique: true,  // Ensure email is unique
-        required: true // Make email required
+        unique: true, // Ensure email is unique
+        required: true, // Make email required
     },
     password: {
         type: String,
-        required: true // Make password required
-    }
+        required: true, // Make password required
+    },
 });
 
 module.exports = mongoose.model('Users', Users, 'Users');
