@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "beutiful": "lint-staged",
     "dev": "nodemon ./src/server.js"
   },
   "lint-staged": {

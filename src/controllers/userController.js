@@ -1,11 +1,16 @@
+const modelUser = require('../models/Users');
+const JWT = require('jsonwebtoken');
+const SECRET_KEY = 'Namnv';
+
 const login = async (req, res) => {
     try {
-        if (!username || !email || !password) {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
             return res.status(400).json({
-                message: 'Username, email, and password are required.',
+                message: 'Username and password are required.',
             });
         }
-        const { username, password } = req.body;
         const user = await modelUser.findOne({ username, password });
         if (user) {
             const token = JWT.sign({ id: user._id }, SECRET_KEY, {
@@ -14,19 +19,18 @@ const login = async (req, res) => {
             const refreshToken = JWT.sign({ id: user._id }, SECRET_KEY, {
                 expiresIn: '1d',
             });
-            res.json({
-                status: 200,
-                message: 'Đăng nhập thành công',
+            return res.status(200).json({
+                message: 'Login successful',
                 token: token,
                 refreshToken: refreshToken,
             });
         } else {
-            res.status(401).json({
+            return res.status(401).json({
                 message: 'Invalid username or password',
             });
         }
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: 'An error occurred',
             error: error.message,
         });
