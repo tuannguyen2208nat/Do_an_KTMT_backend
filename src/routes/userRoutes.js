@@ -14,7 +14,6 @@ UserRouter.post('/login', async (req, res) => {
                 message: 'Username and password are required.'
             });
         }
-
         const user = await modelUser.findOne({ username, password });
         if (user) {
             const token = JWT.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1h' });
