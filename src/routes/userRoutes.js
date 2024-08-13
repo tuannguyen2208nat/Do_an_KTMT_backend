@@ -1,6 +1,5 @@
 var express = require('express');
 var UserRouter = express.Router();
-const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
 const SECRET_KEY = "Namnv"
@@ -16,39 +15,29 @@ UserRouter.post('/login', async (req, res) => {
             });
         }
 
-        // Tìm người dùng bằng username
-        const user = await modelUser.findOne({ username });
-
-        if (user && await bcrypt.compare(password, user.password)) {
-            // Tạo JWT token
+        const user = await modelUser.findOne({ username, password });
+        if (user) {
             const token = JWT.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1h' });
             const refreshToken = JWT.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1d' });
-
-            // Gửi thông tin người dùng và token lên frontend
-            res.json({
-                status: 200,
-                message: 'Đăng nhập thành công',
-                user: {
-                    id: user._id,
-                    name: user.name,
-                    username: user.username,
-                    email: user.email,
-                },
+            return res.status(200).json({
+                message: 'Login successful',
                 token: token,
                 refreshToken: refreshToken
             });
         } else {
-            res.status(401).json({
+            return res.status(401).json({
                 message: 'Invalid username or password'
             });
         }
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: 'An error occurred',
             error: error.message
         });
     }
 });
+
+
 
 // Register user
 UserRouter.post('/register', async (req, res) => {
