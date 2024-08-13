@@ -1,11 +1,5 @@
-var express = require('express');
-var UserRouter = express.Router();
-const modelUser = require('../models/Users');
-const JWT = require('jsonwebtoken');
-const SECRET_KEY = "Namnv"
 
-// Login user
-UserRouter.post('/login', async (req, res) => {
+const login = async (req, res) => {
     try {
         if (!username || !email || !password) {
             return res.status(400).json({
@@ -34,10 +28,9 @@ UserRouter.post('/login', async (req, res) => {
             error: error.message
         });
     }
-});
+};
 
-// Register user
-UserRouter.post('/register', async (req, res) => {
+const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
@@ -65,8 +58,6 @@ UserRouter.post('/register', async (req, res) => {
             error: error.message
         });
     }
-});
+};
 
-
-
-module.exports = UserRouter;
+module.exports = { login, register };

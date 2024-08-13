@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Users = new Schema({
+    name: {
+        type: String,
+        maxLength: 255,
+        required: true
+    },
     username: {
         type: String,
         unique: true,  // Ensure username is unique
