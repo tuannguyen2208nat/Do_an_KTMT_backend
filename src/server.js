@@ -6,6 +6,7 @@ const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
 const mqttClient = require('./config/mqttHelper');
 var usersRouter = require('./routes/userRoutes');
+var sensorRoutes = require('./routes/sensorRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ database.connect();
 mqttClient.connect();
 
 app.use('/', usersRouter);
+app.use('/sensor', sensorRoutes);
 
 app.listen(port, hostname, () => {
     console.log(`Listening on port ${port}`);
