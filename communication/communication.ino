@@ -11,6 +11,8 @@ DHT20 dht20;
 #define RXD 9
 #define BAUD_RATE 9600
 
+const int minute=2;
+
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 AdafruitIO_Feed *status = io.feed("status");
 AdafruitIO_Feed *temp = io.feed("temperature");
@@ -29,8 +31,7 @@ void setup()
     pinMode(LED_PIN, OUTPUT);
     Serial.begin(115200);
     Serial2.begin(BAUD_RATE, SERIAL_8N1, TXD, RXD);
-
-    // Initialize the relay to OFF state
+    
     sendModbusCommand(relay_OFF[0], sizeof(relay_OFF[0]));
 
     while (!Serial)
@@ -44,16 +45,10 @@ void setup()
         Serial.println("Connecting to Adafruit IO");
         delay(500);
     }
-
-    if (!dht20.begin())
-    {
-        Serial.println("Failed to initialize DHT20 sensor!");
-    }
-
-    xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 2048, NULL, 2, NULL);
-    Serial.println();
-    Serial.println(io.statusText());
+    dht20.begin();
+    xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 4096, NULL, 2, NULL);
     status->get();
+    Serial.println("Start");
 }
 
 void loop()
@@ -103,6 +98,8 @@ void TaskTemperatureHumidity(void *pvParameters)
         Serial.println("Temperature: " + String(dht20.getTemperature()) + " - Humidity: " + String(dht20.getHumidity()));
         temp->save(String(dht20.getTemperature()));
         humi->save(String(dht20.getHumidity()));
-        vTaskDelay(30000 / portTICK_PERIOD_MS);
+        int time=minute*60*1000;
+        delay(time);
+        // vTaskDelay(time) / portTICK_PERIOD_MS);
     }
 }

@@ -11,4 +11,4 @@ module.exports = mongoose.model(
     'TemperatureSensor',
     TemperatureSensor,
     'TemperatureSensor',
-);
+); 
