@@ -13,13 +13,13 @@ DHT20 dht20;
 #define RXD 9
 #define BAUD_RATE 9600
 
-static const int RXPin = 9, TXPin = 8;
+static const int TXPin = 6, RXPin= 7;
 static const uint32_t GPSBaud = 9600;
 
 float X, Y;
 
 TinyGPSPlus gps;
-SoftwareSerial ss(RXPin, TXPin);
+SoftwareSerial ss(TXPin,RXPin);
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 AdafruitIO_Feed *status = io.feed("status");
