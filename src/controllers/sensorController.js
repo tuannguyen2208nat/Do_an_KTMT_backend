@@ -3,15 +3,16 @@ const TemperatureSensors = require('../models/TemperatureSensors'); // Ensure mo
 
 const getTemp = async (req, res) => {
     try {
-        const { userID } = req.body; // Changed from userid to userID to match schema
+        const { userID } = req.body; // Make sure the client sends 'userID' in the body
+        console.log('User ID:', userID);
         const latestData = await TemperatureSensors.findOne({ userID: userID })
-            .sort({ Date: -1 })
+            .sort({ Date: -1 }) // Ensure 'Date' exists in the schema
             .exec();
 
         if (latestData) {
             res.json({
                 status: 200,
-                data: latestData.data,
+                data: latestData.data, // Assuming 'data' contains the relevant temperature information
             });
         } else {
             return res.status(404).json({
@@ -28,16 +29,18 @@ const getTemp = async (req, res) => {
 }
 
 const getHumi = async (req, res) => {
+    console.log('Get Humidity');
     try {
-        const { userID } = req.body; // Changed from userid to userID to match schema
+        const { userID } = req.body;
+        console.log('User ID:', userID);
         const latestData = await HumiditySensors.findOne({ userID: userID })
-            .sort({ Date: -1 })
+            .sort({ Date: -1 }) // Ensure 'Date' exists in the schema
             .exec();
 
         if (latestData) {
             res.json({
                 status: 200,
-                data: latestData.data,
+                data: latestData.data, // Assuming 'data' contains the relevant humidity information
             });
         } else {
             return res.status(404).json({

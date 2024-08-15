@@ -3,6 +3,8 @@
 #include "RelayStatus.h"
 #include <DHT20.h>
 #include "authentic.h"
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
 
 DHT20 dht20;
 
@@ -11,7 +13,13 @@ DHT20 dht20;
 #define RXD 9
 #define BAUD_RATE 9600
 
-const int minute=2;
+static const int RXPin = 9, TXPin = 8;
+static const uint32_t GPSBaud = 9600;
+
+float X, Y;
+
+TinyGPSPlus gps;
+SoftwareSerial ss(RXPin, TXPin);
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 AdafruitIO_Feed *status = io.feed("status");
@@ -31,7 +39,8 @@ void setup()
     pinMode(LED_PIN, OUTPUT);
     Serial.begin(115200);
     Serial2.begin(BAUD_RATE, SERIAL_8N1, TXD, RXD);
-    
+    ss.begin(GPSBaud);
+
     sendModbusCommand(relay_OFF[0], sizeof(relay_OFF[0]));
 
     while (!Serial)
@@ -47,6 +56,7 @@ void setup()
     }
     dht20.begin();
     xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 4096, NULL, 2, NULL);
+    xTaskCreate(TaskGPS, "TaskGPS", 4096, NULL, 2, NULL);
     status->get();
     Serial.println("Start");
 }
@@ -54,6 +64,8 @@ void setup()
 void loop()
 {
     io.run();
+    while (ss.available())
+        gps.encode(ss.read());
 }
 
 void handleMessage(AdafruitIO_Data *data)
@@ -98,8 +110,35 @@ void TaskTemperatureHumidity(void *pvParameters)
         Serial.println("Temperature: " + String(dht20.getTemperature()) + " - Humidity: " + String(dht20.getHumidity()));
         temp->save(String(dht20.getTemperature()));
         humi->save(String(dht20.getHumidity()));
-        int time=minute*60*1000;
-        delay(time);
-        // vTaskDelay(time) / portTICK_PERIOD_MS);
+        vTaskDelay(120000 / portTICK_PERIOD_MS);
+    }
+}
+
+void TaskGPS(void *pvParameters)
+{
+    while (1)
+    {
+        X = gps.location.lat();
+        Y = gps.location.lng();
+        String xStr = String(X, 7);
+        String yStr = String(Y, 7);
+
+        Serial.print("X: ");
+        Serial.print(xStr);
+        Serial.print(" Y: ");
+        Serial.println(yStr);
+
+        Serial.println();
+
+        if (gps.location.isValid())
+        {
+            status->save(xStr + "-" + yStr);
+        }
+
+        if (millis() > 5000 && gps.charsProcessed() < 10)
+        {
+            Serial.println(F("No GPS data received: check wiring"));
+        }
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
