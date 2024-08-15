@@ -1,0 +1,12 @@
+#ifndef AUTHENTIC_H
+#define AUTHENTIC_H
+
+#define IO_USERNAME 
+#define IO_KEY 
+
+#define WIFI_SSID 
+#define WIFI_PASS 
+
+const char* IP_TOKEN = "";
+
+#endif // AUTHENTIC_H

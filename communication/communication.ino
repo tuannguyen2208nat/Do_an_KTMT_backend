@@ -25,6 +25,7 @@ AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 AdafruitIO_Feed *status = io.feed("status");
 AdafruitIO_Feed *temp = io.feed("temperature");
 AdafruitIO_Feed *humi = io.feed("humidity");
+AdafruitIO_Feed *location = io.feed("location");
 
 void sendModbusCommand(const uint8_t command[], size_t length)
 {
@@ -132,7 +133,7 @@ void TaskGPS(void *pvParameters)
 
         if (gps.location.isValid())
         {
-            status->save(xStr + "-" + yStr);
+            location->save(xStr + "-" + yStr);
         }
 
         if (millis() > 5000 && gps.charsProcessed() < 10)
