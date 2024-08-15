@@ -7,19 +7,10 @@
 #include <SoftwareSerial.h>
 
 DHT20 dht20;
-
-#define LED_PIN 2
-#define TXD 8
-#define RXD 9
-#define BAUD_RATE 9600
-
-static const int TXPin = 6, RXPin= 7;
-static const uint32_t GPSBaud = 9600;
-
 float X, Y;
 
 TinyGPSPlus gps;
-SoftwareSerial ss(TXPin,RXPin);
+SoftwareSerial ss(TXD_GPS,RXD_GPS);
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 AdafruitIO_Feed *status = io.feed("status");
@@ -37,10 +28,9 @@ void sendModbusCommand(const uint8_t command[], size_t length)
 
 void setup()
 {
-    pinMode(LED_PIN, OUTPUT);
-    Serial.begin(115200);
-    Serial2.begin(BAUD_RATE, SERIAL_8N1, TXD, RXD);
-    ss.begin(GPSBaud);
+    Serial.begin(BAUD_RATE_1);
+    Serial2.begin(BAUD_RATE_2, SERIAL_8N1, TXD_RELAY, RXD_RELAY);
+    ss.begin(BAUD_RATE_2);
 
     sendModbusCommand(relay_OFF[0], sizeof(relay_OFF[0]));
 
@@ -111,7 +101,7 @@ void TaskTemperatureHumidity(void *pvParameters)
         Serial.println("Temperature: " + String(dht20.getTemperature()) + " - Humidity: " + String(dht20.getHumidity()));
         temp->save(String(dht20.getTemperature()));
         humi->save(String(dht20.getHumidity()));
-        vTaskDelay(120000 / portTICK_PERIOD_MS);
+        vTaskDelay(time_temp / portTICK_PERIOD_MS);
     }
 }
 
@@ -140,6 +130,6 @@ void TaskGPS(void *pvParameters)
         {
             Serial.println(F("No GPS data received: check wiring"));
         }
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(time_gps / portTICK_PERIOD_MS);
     }
 }
