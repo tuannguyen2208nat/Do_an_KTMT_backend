@@ -17,6 +17,6 @@
 #define WIFI_SSID "Vuon Lan"
 #define WIFI_PASS "Vuonlan68"
 
-const char* IP_TOKEN = "6b3695b6df2ddb";
+const char *IP_TOKEN = "6b3695b6df2ddb";
 
 #endif // AUTHENTIC_H
