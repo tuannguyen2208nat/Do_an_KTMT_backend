@@ -19,6 +19,7 @@ const client = mqtt.connect(
 const statusFeed = `${AIO_USERNAME}/feeds/status`;
 const tempFeed = `${AIO_USERNAME}/feeds/temperature`;
 const humFeed = `${AIO_USERNAME}/feeds/humidity`;
+const locationFeed = `${AIO_USERNAME}/feeds/location`;
 
 client.on('connect', () => {
     console.log('Connected to MQTT');
@@ -35,7 +36,7 @@ function publishData(data) {
 }
 
 function subscribeToFeeds(callback) {
-    [tempFeed, humFeed].forEach((feed) => {
+    [tempFeed, humFeed, locationFeed].forEach((feed) => {
         client.subscribe(feed, (err) => {
             if (err) {
                 console.error('Subscription error:', err);
