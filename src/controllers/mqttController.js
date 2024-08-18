@@ -9,7 +9,7 @@ const connect = () => {
             console.log(`Humidity data received: ${message}%`);
             try {
                 const humidityData = new HumiditySensor({
-                    userID: '66bb11779cf4e342e66f8a19',
+                    userID: '66c0e84671df580c53ebd3ed',
                     data: parseFloat(message),
                     Date: new Date(),
                 });
@@ -22,7 +22,7 @@ const connect = () => {
             console.log(`Temperature data received: ${message}°C`);
             try {
                 const tempData = new TemperatureSensor({
-                    userID: '66bb11779cf4e342e66f8a19',
+                    userID: '66c0e84671df580c53ebd3ed',
                     data: parseFloat(message),
                     Date: new Date(),
                 });
@@ -54,8 +54,12 @@ const connect = () => {
     });
 };
 
+const disconect = () => {
+    mqttClient.disconnect();
+};
+
 const publish = (data) => {
     mqttClient.publishData(data);
 };
 
-module.exports = { connect, publish };
+module.exports = { connect, publish, disconect };

@@ -17,6 +17,4 @@
 #define WIFI_SSID ""
 #define WIFI_PASS ""
 
-const char* IP_TOKEN = "";
-
 #endif // AUTHENTIC_H

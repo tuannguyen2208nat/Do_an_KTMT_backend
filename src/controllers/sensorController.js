@@ -1,59 +1,54 @@
-const HumiditySensors = require("../models/HumiditySensors"); // Ensure model name matches schema
-const TemperatureSensors = require('../models/TemperatureSensors'); // Ensure model name matches schema
+const HumiditySensors = require('../models/HumiditySensors');
+const TemperatureSensors = require('../models/TemperatureSensors');
 
 const getTemp = async (req, res) => {
     try {
-        const { userID } = req.body; // Make sure the client sends 'userID' in the body
-        console.log('User ID:', userID);
+        const userID = req.user.id;
         const latestData = await TemperatureSensors.findOne({ userID: userID })
-            .sort({ Date: -1 }) // Ensure 'Date' exists in the schema
+            .sort({ Date: -1 })
             .exec();
 
         if (latestData) {
             res.json({
                 status: 200,
-                data: latestData.data, // Assuming 'data' contains the relevant temperature information
+                data: latestData.data,
             });
         } else {
             return res.status(404).json({
-                message: 'No data found for this userID.',
+                message: 'No temperature data found for this user.',
             });
         }
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({
             message: 'Server error',
             error: error.message,
         });
     }
-}
+};
 
 const getHumi = async (req, res) => {
-    console.log('Get Humidity');
     try {
-        const { userID } = req.body;
-        console.log('User ID:', userID);
+        const userID = req.user.id;
         const latestData = await HumiditySensors.findOne({ userID: userID })
-            .sort({ Date: -1 }) // Ensure 'Date' exists in the schema
+            .sort({ Date: -1 })
             .exec();
 
         if (latestData) {
             res.json({
                 status: 200,
-                data: latestData.data, // Assuming 'data' contains the relevant humidity information
+                data: latestData.data,
             });
         } else {
             return res.status(404).json({
-                message: 'No data found for this userID.',
+                message: 'No humidity data found for this user.',
             });
         }
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({
             message: 'Server error',
             error: error.message,
         });
     }
-}
+};
 
 module.exports = { getTemp, getHumi };

@@ -52,6 +52,12 @@ function subscribeToFeeds(callback) {
     });
 }
 
+function disconnect() {
+    client.end(() => {
+        console.log('Disconnected from MQTT');
+    });
+}
+
 client.on('error', (err) => {
     console.error('Connection error:', err);
 });
@@ -59,4 +65,5 @@ client.on('error', (err) => {
 module.exports = {
     publishData,
     subscribeToFeeds,
+    disconnect,
 };

@@ -4,9 +4,10 @@ var cors = require('cors');
 
 const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
-const mqttClient = require('./config/mqttHelper');
+const mqttClient = require('./controllers/mqttController');
 var usersRouter = require('./routes/userRoutes');
 var sensorRoutes = require('./routes/sensorRoutes');
+var mqttRoutes = require('./routes/mqttRoutes');
 
 const app = express();
 
@@ -26,6 +27,7 @@ mqttClient.connect();
 
 app.use('/', usersRouter);
 app.use('/sensor', sensorRoutes);
+app.use('/mqtt', mqttRoutes);
 
 app.listen(port, hostname, () => {
     console.log(`Listening on port ${port}`);

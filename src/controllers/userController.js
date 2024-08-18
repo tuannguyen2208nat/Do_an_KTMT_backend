@@ -1,6 +1,7 @@
+require('dotenv').config();
+const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
-const SECRET_KEY = 'Namnv';
 
 const login = async (req, res) => {
     try {
@@ -11,19 +12,34 @@ const login = async (req, res) => {
                 message: 'Username and password are required.',
             });
         }
-        const user = await modelUser.findOne({ username, password });
+
+        const user = await modelUser.findOne({ username });
+
         if (user) {
-            const token = JWT.sign({ id: user._id }, SECRET_KEY, {
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    message: 'Invalid username or password',
+                });
+            }
+
+            const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, {
                 expiresIn: '1h',
             });
-            const refreshToken = JWT.sign({ id: user._id }, SECRET_KEY, {
-                expiresIn: '1d',
+            const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, {
+                expiresIn: '7d',
             });
+
+            user.refreshToken = refreshToken;
+
+            await user.save();
+
             return res.status(200).json({
                 message: 'Login successful',
-                token: token,
-                refreshToken: refreshToken,
-                userId: user._id
+                userId: user._id,
+                accessToken,
+                refreshToken
             });
         } else {
             return res.status(401).json({
@@ -41,23 +57,34 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
+
         if (!username || !email || !password) {
             return res.status(400).json({
                 message: 'Username, email, and password are required.',
             });
         }
+
         const existingUser = await modelUser.findOne({
-            $or: [{ email: email }, { username: username }],
+            $or: [{ email }, { username }]
         });
+
         if (existingUser) {
             return res.status(400).json({
                 message: 'Email or username already exists.',
             });
         }
-        const newUser = new modelUser(req.body);
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = new modelUser({
+            username,
+            email,
+            password: hashedPassword
+        });
+
         const result = await newUser.save();
-        res.json({
-            status: 200,
+
+        res.status(200).json({
             message: 'User registered successfully',
             data: result,
         });
