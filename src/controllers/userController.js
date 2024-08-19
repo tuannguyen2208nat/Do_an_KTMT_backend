@@ -2,6 +2,7 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
+const Transporter = require('../config/email');
 
 const login = async (req, res) => {
     try {
@@ -56,11 +57,11 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, AIO_USERNAME, AIO_KEY } = req.body;
 
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !AIO_USERNAME || !AIO_KEY) {
             return res.status(400).json({
-                message: 'Username, email, and password are required.',
+                message: 'Username, email, password , AIO_USERNAME and AIO_KEY are required.',
             });
         }
 
@@ -79,15 +80,26 @@ const register = async (req, res) => {
         const newUser = new modelUser({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            AIO_USERNAME,
+            AIO_KEY
         });
 
         const result = await newUser.save();
 
-        res.status(200).json({
-            message: 'User registered successfully',
-            data: result,
-        });
+        if (result) {
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: 'Registration successful',
+                text: 'You have successfully registered to our platform',
+            };
+            await Transporter.sendMail(mailOptions)
+            res.status(200).json({
+                message: 'User registered successfully',
+                data: result,
+            });
+        }
     } catch (error) {
         res.status(500).json({
             message: 'Server error',

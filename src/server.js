@@ -4,28 +4,20 @@ var cors = require('cors');
 
 const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
-var usersRouter = require('./routes/userRoutes');
-var sensorRoutes = require('./routes/sensorRoutes');
-var mqttRoutes = require('./routes/mqttRoutes');
+const index = require('./routes/index');
+
+const port = process.env.PORT || 3001;
+const hostname = process.env.HOST_NAME;
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
-
-// Middleware to parse URL-encoded bodies
-app.use(express.urlencoded({ extended: true }));
-
-const port = process.env.PORT || 3000;
-const hostname = process.env.HOST_NAME;
+app.use('/', index);
+app.use(express.urlencoded({ extended: true }));// Middleware to parse URL-encoded bodies
 
 configViewEngine(app);
-
 database.connect();
-
-app.use('/', usersRouter);
-app.use('/sensor', sensorRoutes);
-app.use('/mqtt', mqttRoutes);
 
 app.listen(port, hostname, () => {
     console.log(`Listening on port ${port}`);
