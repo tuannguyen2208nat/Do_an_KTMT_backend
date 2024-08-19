@@ -16,6 +16,14 @@ const Users = new Schema({
         type: String,
         required: true,
     },
+    AIO_USERNAME: {
+        type: String,
+        required: true,
+    },
+    AIO_KEY: {
+        type: String,
+        required: true,
+    },
     accessToken: {
         type: String,
     },

@@ -5,6 +5,8 @@ const authenticateToken = require('../middlewares/authenticateToken');
 
 mqttRoutes.get('/connect', authenticateToken, mqttController.connect);
 
-mqttRoutes.get('/disconect', authenticateToken, mqttController.disconect);
+mqttRoutes.get('/publishdata', authenticateToken, mqttController.publishdata);
+
+mqttRoutes.get('/disconect', authenticateToken, mqttController.disconnect);
 
 module.exports = mqttRoutes;
