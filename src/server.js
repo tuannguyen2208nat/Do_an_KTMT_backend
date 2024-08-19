@@ -4,7 +4,6 @@ var cors = require('cors');
 
 const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
-const mqttClient = require('./controllers/mqttController');
 var usersRouter = require('./routes/userRoutes');
 var sensorRoutes = require('./routes/sensorRoutes');
 var mqttRoutes = require('./routes/mqttRoutes');
@@ -23,7 +22,6 @@ const hostname = process.env.HOST_NAME;
 configViewEngine(app);
 
 database.connect();
-mqttClient.connect();
 
 app.use('/', usersRouter);
 app.use('/sensor', sensorRoutes);

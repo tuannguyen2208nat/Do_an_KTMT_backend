@@ -48,7 +48,7 @@ function subscribeToFeeds(callback) {
     client.on('message', (topic, message) => {
         const feed = topic;
         const data = message.toString();
-        callback(feed, message.toString());
+        callback(feed, data);
     });
 }
 

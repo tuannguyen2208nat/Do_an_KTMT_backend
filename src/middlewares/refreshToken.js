@@ -1,7 +1,7 @@
 const JWT = require('jsonwebtoken');
 const modelUser = require('../models/Users');
-const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
-const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+const accessTokenSecret = process.env.accessTokenSecret;
+const refreshTokenSecret = process.env.refreshTokenSecret;
 
 const refreshToken = async (req, res) => {
     const { refreshToken } = req.body;

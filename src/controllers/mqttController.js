@@ -3,13 +3,14 @@ const TemperatureSensor = require('../models/TemperatureSensors');
 const HumiditySensor = require('../models/HumiditySensors');
 const Location = require('../models/Location');
 
-const connect = () => {
+const connect = async (req, res) => {
+    const userID = req.user.id;
     mqttClient.subscribeToFeeds(async (feed, message) => {
         if (feed.includes('humidity')) {
             console.log(`Humidity data received: ${message}%`);
             try {
                 const humidityData = new HumiditySensor({
-                    userID: '66c0e84671df580c53ebd3ed',
+                    userID: userID,
                     data: parseFloat(message),
                     Date: new Date(),
                 });
@@ -22,7 +23,7 @@ const connect = () => {
             console.log(`Temperature data received: ${message}°C`);
             try {
                 const tempData = new TemperatureSensor({
-                    userID: '66c0e84671df580c53ebd3ed',
+                    userID: userID,
                     data: parseFloat(message),
                     Date: new Date(),
                 });
@@ -35,11 +36,11 @@ const connect = () => {
                 );
             }
         } else if (feed.includes('location')) {
-            console.log(`Location data received: ${message}°C`);
+            console.log(`Location data received: ${message}`);
             try {
                 const [X, Y] = message.split('-');
                 const locationData = new Location({
-                    userID: '66bb11779cf4e342e66f8a19',
+                    userID: userID,
                     X: X,
                     Y: Y,
                 });
