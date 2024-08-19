@@ -5,7 +5,7 @@ const HumiditySensor = require('../models/HumiditySensors');
 const Location = require('../models/Location');
 const modelUser = require('../models/Users');
 
-const AIO_PORT = process.env.MQTT_PORT;
+const AIO_PORT = process.env.AIO_PORT;
 
 let client = null;
 
