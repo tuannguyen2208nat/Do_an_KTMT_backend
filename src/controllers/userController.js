@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
 const Transporter = require('../config/email');
+const upload = require('../middlewares/uploadMiddleware')
 
 const login = async (req, res) => {
     try {
@@ -158,25 +159,20 @@ const edit_profile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const { username, email, phone_number, address, aioUser, aioKey } = req.body;
-        if (username) {
-            user.username = username;
+        const { username, fullname, email, phone_number, address, aioUser, aioKey } = req.body;
+        if (username) user.username = username;
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (aioUser) user.AIO_USERNAME = aioUser;
+        if (aioKey) user.AIO_KEY = aioKey;
+        if (phone_number) user.phone_number = phone_number;
+        if (address) user.address = address;
+
+        if (req.file) {
+            user.avatar.data = req.file.buffer;
+            user.avatar.contentType = req.file.mimetype;
         }
-        if (email) {
-            user.email = email;
-        }
-        if (aioUser) {
-            user.AIO_USERNAME = aioUser;
-        }
-        if (aioKey) {
-            user.AIO_KEY = aioKey;
-        }
-        if (phone_number) {
-            user.phone_number = phone_number;
-        }
-        if (address) {
-            user.address = address;
-        }
+
         await user.save();
         return res.status(200).json({
             message: 'Profile updated successfully',

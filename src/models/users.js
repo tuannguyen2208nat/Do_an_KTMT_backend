@@ -7,6 +7,10 @@ const Users = new Schema({
         unique: true,
         maxLength: 255,
     },
+    fullname: {
+        type: String,
+        maxLength: 255,
+    },
     email: {
         type: String,
         unique: true,
@@ -21,6 +25,10 @@ const Users = new Schema({
     },
     address: {
         type: String,
+    },
+    avatar: {
+        data: Buffer,
+        contentType: String,
     },
     AIO_USERNAME: {
         type: String,
