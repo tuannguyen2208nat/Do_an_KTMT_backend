@@ -16,6 +16,12 @@ const Users = new Schema({
         type: String,
         required: true,
     },
+    phone_number: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
     AIO_USERNAME: {
         type: String,
         required: true,

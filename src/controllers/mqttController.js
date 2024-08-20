@@ -11,7 +11,6 @@ let client = null;
 
 const connect = async (req, res) => {
     const userId = req.user.id;
-
     const user = await modelUser.findById(userId).exec();
     if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -40,7 +39,6 @@ const connect = async (req, res) => {
 };
 
 const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
-    console.log(AIO_USERNAME)
     const tempFeed = `${AIO_USERNAME}/feeds/temperature`;
     const humFeed = `${AIO_USERNAME}/feeds/humidity`;
     const locationFeed = `${AIO_USERNAME}/feeds/location`;
@@ -117,6 +115,7 @@ const publishdata = (req, res) => {
 };
 
 const disconnect = (req, res) => {
+    console.log('client')
     if (client) {
         client.end(() => {
             console.log('Disconnected from MQTT');

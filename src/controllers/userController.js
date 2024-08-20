@@ -57,9 +57,9 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
     try {
-        const { username, email, password, AIO_USERNAME, AIO_KEY } = req.body;
+        const { username, email, password, aioUser, aioKey } = req.body;
 
-        if (!username || !email || !password || !AIO_USERNAME || !AIO_KEY) {
+        if (!username || !email || !password || !aioUser || !aioKey) {
             return res.status(400).json({
                 message: 'Username, email, password , AIO_USERNAME and AIO_KEY are required.',
             });
@@ -81,8 +81,8 @@ const register = async (req, res) => {
             username,
             email,
             password: hashedPassword,
-            AIO_USERNAME,
-            AIO_KEY
+            AIO_USERNAME: aioUser,
+            AIO_KEY: aioKey
         });
 
         const result = await newUser.save();
@@ -108,4 +108,86 @@ const register = async (req, res) => {
     }
 };
 
-module.exports = { login, register };
+const logout = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.refreshToken = '';
+        await user.save();
+        return res.status(200).json({
+            message: 'User logged out successfully',
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: 'An error occurred',
+            error: error.message,
+        });
+    }
+}
+
+const get_profile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const userProfile = user.toObject();
+        delete userProfile.password;
+        return res.status(200).json({
+            message: 'Profile retrieved successfully',
+            data: userProfile,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: 'An error occurred',
+            error: error.message,
+        });
+    }
+}
+
+const edit_profile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const { username, email, phone_number, address, aioUser, aioKey } = req.body;
+        if (username) {
+            user.username = username;
+        }
+        if (email) {
+            user.email = email;
+        }
+        if (aioUser) {
+            user.AIO_USERNAME = aioUser;
+        }
+        if (aioKey) {
+            user.AIO_KEY = aioKey;
+        }
+        if (phone_number) {
+            user.phone_number = phone_number;
+        }
+        if (address) {
+            user.address = address;
+        }
+        await user.save();
+        return res.status(200).json({
+            message: 'Profile updated successfully',
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: 'An error occurred',
+            error: error.message,
+        });
+    }
+}
+
+module.exports = { login, register, logout, get_profile, edit_profile };

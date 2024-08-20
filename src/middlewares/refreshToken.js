@@ -5,13 +5,19 @@ const refreshTokenSecret = process.env.refreshTokenSecret;
 
 const refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.sendStatus(401);
+    if (!refreshToken) return res.status(401).json({
+        status: 401,
+    });
 
     JWT.verify(refreshToken, refreshTokenSecret, async (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) return res.status(403).json({
+            status: 403,
+        });
 
         const dbUser = await modelUser.findById(user.id);
-        if (!dbUser || dbUser.refreshToken !== refreshToken) return res.sendStatus(403);
+        if (!dbUser || dbUser.refreshToken !== refreshToken) return res.status(403).json({
+            status: 403,
+        });
 
         const newAccessToken = JWT.sign({ id: dbUser._id }, accessTokenSecret, { expiresIn: '1h' });
         res.json({ accessToken: newAccessToken });
