@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
 const Transporter = require('../config/email');
-const upload = require('../middlewares/uploadMiddleware')
 
 const login = async (req, res) => {
     try {
@@ -39,7 +38,6 @@ const login = async (req, res) => {
 
             return res.status(200).json({
                 message: 'Login successful',
-                userId: user._id,
                 accessToken,
                 refreshToken
             });
@@ -58,11 +56,11 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
     try {
-        const { username, email, password, aioUser, aioKey } = req.body;
+        const { username, email, password, aioUser, aioKey, phone } = req.body;
 
-        if (!username || !email || !password || !aioUser || !aioKey) {
+        if (!username || !email || !password || !aioUser || !aioKey || !phone) {
             return res.status(400).json({
-                message: 'Username, email, password , AIO_USERNAME and AIO_KEY are required.',
+                message: 'Username, email, password ,phone, AIO_USERNAME and AIO_KEY are required.',
             });
         }
 
@@ -83,7 +81,8 @@ const register = async (req, res) => {
             email,
             password: hashedPassword,
             AIO_USERNAME: aioUser,
-            AIO_KEY: aioKey
+            AIO_KEY: aioKey,
+            phone_number: phone,
         });
 
         const result = await newUser.save();
@@ -186,4 +185,51 @@ const edit_profile = async (req, res) => {
     }
 }
 
-module.exports = { login, register, logout, get_profile, edit_profile };
+const change_password = async (req, res) => {
+    try {
+        const { password, newpassword } = req.body;
+        if (!password || !newpassword) {
+            return res.status(400).json({
+                message: 'Current password and new password are required.',
+            });
+        }
+
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found.',
+            });
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                message: 'Invalid current password.',
+            });
+        }
+        const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, {
+            expiresIn: '1h',
+        });
+        const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, {
+            expiresIn: '7d',
+        });
+        const hashedPassword = await bcrypt.hash(newpassword, 10);
+        user.refreshToken = refreshToken;
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({
+            message: 'Password changed successfully.',
+            accessToken,
+            refreshToken
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'An error occurred.',
+            error: error.message,
+        });
+    }
+}
+
+module.exports = { login, register, logout, get_profile, edit_profile, change_password };

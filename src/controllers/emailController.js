@@ -22,10 +22,10 @@ const sendVerificationCode = async (email, subject, text) => {
 
 const send_code = async (req, res) => {
     try {
-        const { email } = req.body;
+        let { email } = req;
         if (!email) {
             return res.status(400).json({
-                message: 'Email are required.',
+                message: 'Email is required.',
             });
         }
         const code = generateVerificationCode();
@@ -79,15 +79,16 @@ const change_password = async (req, res) => {
 
 const confirm_code = async (req, res) => {
     try {
-        const { email, code } = req.body;
+        const { email } = req;
+        const { verificationCode } = req.body;
 
-        if (!email || !code) {
+        if (!email || !verificationCode) {
             return res.status(400).json({
                 message: 'Email and code are required.',
             });
         }
         const storedCode = verificationCodes[email];
-        if (storedCode === code) {
+        if (storedCode === verificationCode) {
             delete verificationCodes[email];
             return res.status(200).json({
                 message: 'Verification successful.',
