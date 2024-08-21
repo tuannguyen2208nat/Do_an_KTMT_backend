@@ -31,9 +31,9 @@ const connect = async (req, res) => {
     );
 
     client.on('connect', () => {
+        connected = true;
         console.log('Connected to MQTT');
         res.status(200).json({ message: 'Connected to MQTT' });
-        connected = true;
         subscribeToFeeds(client, AIO_USERNAME, userId);
     });
 
@@ -122,8 +122,8 @@ const publishdata = (req, res) => {
 const disconnect = (req, res) => {
     if (client) {
         client.end(() => {
-            console.log('Disconnected from MQTT');
             connected = false;
+            console.log('Disconnected from MQTT');
             res.status(200).json({ message: 'Disconnected from MQTT' });
         });
     } else {
