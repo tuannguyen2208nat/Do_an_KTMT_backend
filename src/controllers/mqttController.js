@@ -8,8 +8,12 @@ const modelUser = require('../models/Users');
 const AIO_PORT = process.env.AIO_PORT;
 
 let client = null;
+let connected = false;
 
 const connect = async (req, res) => {
+    if (connected) {
+        return;
+    }
     const userId = req.user.id;
     const user = await modelUser.findById(userId).exec();
     if (!user) {
@@ -29,6 +33,7 @@ const connect = async (req, res) => {
     client.on('connect', () => {
         console.log('Connected to MQTT');
         res.status(200).json({ message: 'Connected to MQTT' });
+        connected = true;
         subscribeToFeeds(client, AIO_USERNAME, userId);
     });
 
