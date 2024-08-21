@@ -1,12 +1,11 @@
 var express = require('express');
-var mqttRoutes = express.Router();
+var MqttRoutes = express.Router();
 const mqttController = require('../controllers/mqttController');
-const authenticateToken = require('../middlewares/authenticateToken');
 
-mqttRoutes.get('/connect', mqttController.connect);
+MqttRoutes.get('/connect', mqttController.connect);
 
-mqttRoutes.get('/publishdata', mqttController.publishdata);
+MqttRoutes.get('/publishdata', mqttController.publishdata);
 
-mqttRoutes.get('/disconnect', mqttController.disconnect);
+MqttRoutes.get('/disconnect', mqttController.disconnect);
 
-module.exports = mqttRoutes;
+module.exports = MqttRoutes;

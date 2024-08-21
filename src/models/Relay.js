@@ -6,7 +6,6 @@ const Relay = new Schema({
     relay_id: { type: Number, required: true, unique: true },
     relay_name: { type: String },
     state: { type: Boolean, required: true },
-    Date: { type: Date, required: true },
 });
 
 module.exports = mongoose.model('Relay', Relay, 'Relay');

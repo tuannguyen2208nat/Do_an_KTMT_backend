@@ -1,9 +1,9 @@
 var express = require('express');
-var emailRoutes = express.Router();
+var EmailRoutes = express.Router();
 const emailController = require('../controllers/emailController');
 const emailorusername = require('../middlewares/emailorusername');
 
-emailRoutes.post('/send-code', emailorusername, emailController.send_code);
-emailRoutes.post('/confirm-code', emailorusername, emailController.confirm_code);
+EmailRoutes.post('/send-code', emailorusername, emailController.send_code);
+EmailRoutes.post('/confirm-code', emailorusername, emailController.confirm_code);
 
-module.exports = emailRoutes;
+module.exports = EmailRoutes;

@@ -1,5 +1,31 @@
 const HumiditySensors = require('../models/HumiditySensors');
 const TemperatureSensors = require('../models/TemperatureSensors');
+const modelLog = require('../models/Log');
+
+const setLog = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+        const { activity } = req;
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        if (!activity) {
+            return res.status(400).json({ error: 'Activity is required.' });
+        }
+        const newLog = new modelLog({
+            userID: userId,
+            activity,
+            Date: new Date()
+        });
+        await newLog.save();
+        res.status(200).json({ message: 'Log added successfully.' });
+    }
+    catch (error) {
+        console.error('Error setting data:', error);
+        res.status(500).json({ error: 'An error occurred while setting data.' });
+    }
+}
 
 const getTemp = async (req, res) => {
     try {
@@ -12,12 +38,10 @@ const getTemp = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        // Calculate the start and end dates
-        const endDate = new Date(); // Today's date
+        const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - time + 1); // Subtract 'n' days from today's date
+        startDate.setDate(endDate.getDate() - time + 1);
 
-        // Retrieve data
         const data = await TemperatureSensors.find({
             userID: userId,
             Date: {
@@ -29,7 +53,6 @@ const getTemp = async (req, res) => {
             .exec();
 
         if (data.length === 0) {
-            // Generate all dates in the range
             const allDates = [];
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
@@ -42,9 +65,8 @@ const getTemp = async (req, res) => {
             return res.status(200).json(allDates);
         }
 
-        // Group data by date and calculate daily averages
         const groupedData = data.reduce((acc, item) => {
-            const date = item.Date.toISOString().split('T')[0]; // Extract just the date part
+            const date = item.Date.toISOString().split('T')[0];
             if (!acc[date]) {
                 acc[date] = { total: 0, count: 0 };
             }
@@ -53,7 +75,6 @@ const getTemp = async (req, res) => {
             return acc;
         }, {});
 
-        // Generate all dates in the range
         const allDates = [];
         let currentDate = new Date(startDate);
         while (currentDate <= endDate) {
@@ -87,12 +108,10 @@ const getHumi = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        // Calculate the start and end dates
-        const endDate = new Date(); // Today's date
+        const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - time + 1); // Subtract 'n' days from today's date
+        startDate.setDate(endDate.getDate() - time + 1);
 
-        // Retrieve data
         const data = await HumiditySensors.find({
             userID: userId,
             Date: {
@@ -104,7 +123,6 @@ const getHumi = async (req, res) => {
             .exec();
 
         if (data.length === 0) {
-            // Generate all dates in the range
             const allDates = [];
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
@@ -117,9 +135,8 @@ const getHumi = async (req, res) => {
             return res.status(200).json(allDates);
         }
 
-        // Group data by date and calculate daily averages
         const groupedData = data.reduce((acc, item) => {
-            const date = item.Date.toISOString().split('T')[0]; // Extract just the date part
+            const date = item.Date.toISOString().split('T')[0];
             if (!acc[date]) {
                 acc[date] = { total: 0, count: 0 };
             }
@@ -128,7 +145,6 @@ const getHumi = async (req, res) => {
             return acc;
         }, {});
 
-        // Generate all dates in the range
         const allDates = [];
         let currentDate = new Date(startDate);
         while (currentDate <= endDate) {
@@ -151,4 +167,4 @@ const getHumi = async (req, res) => {
     }
 }
 
-module.exports = { getTemp, getHumi }
+module.exports = { setLog, getTemp, getHumi }
