@@ -123,6 +123,7 @@ const disconnect = (req, res) => {
     if (client) {
         client.end(() => {
             console.log('Disconnected from MQTT');
+            connected = false;
             res.status(200).json({ message: 'Disconnected from MQTT' });
         });
     } else {
