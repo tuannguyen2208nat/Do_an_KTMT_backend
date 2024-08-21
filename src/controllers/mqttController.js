@@ -115,7 +115,6 @@ const publishdata = (req, res) => {
 };
 
 const disconnect = (req, res) => {
-    console.log('client')
     if (client) {
         client.end(() => {
             console.log('Disconnected from MQTT');

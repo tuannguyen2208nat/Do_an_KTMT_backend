@@ -7,6 +7,6 @@ mqttRoutes.get('/connect', authenticateToken, mqttController.connect);
 
 mqttRoutes.get('/publishdata', authenticateToken, mqttController.publishdata);
 
-mqttRoutes.get('/disconect', mqttController.disconnect);
+mqttRoutes.get('/disconnect', mqttController.disconnect);
 
 module.exports = mqttRoutes;

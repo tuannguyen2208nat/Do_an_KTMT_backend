@@ -6,15 +6,16 @@ const Transporter = require('../config/email');
 
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email } = req;
+        const { password } = req.body;
+        const user = await modelUser.findOne({ email });
+        const username = user.username;
 
         if (!username || !password) {
             return res.status(400).json({
                 message: 'Username and password are required.',
             });
         }
-
-        const user = await modelUser.findOne({ username });
 
         if (user) {
             const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -232,4 +233,31 @@ const change_password = async (req, res) => {
     }
 }
 
-module.exports = { login, register, logout, get_profile, edit_profile, change_password };
+const forgot_password = async (req, res) => {
+    try {
+        const { email } = req;
+        const { newPassword } = req.body;
+        const user = await modelUser.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found.',
+            });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        return res.status(200).json({
+            message: 'Password changed successfully.',
+        });
+
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: 'An error occurred.',
+            error: error.message,
+        });
+    }
+
+}
+
+module.exports = { login, register, logout, get_profile, edit_profile, change_password, forgot_password };

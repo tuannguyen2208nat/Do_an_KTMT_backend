@@ -22,7 +22,7 @@ const sendVerificationCode = async (email, subject, text) => {
 
 const send_code = async (req, res) => {
     try {
-        let { email } = req;
+        const { email } = req;
         if (!email) {
             return res.status(400).json({
                 message: 'Email is required.',

@@ -7,6 +7,7 @@ const isEmail = (str) => {
 
 const parseEmailOrUsername = async (req, res, next) => {
     const { emailOrusername, email } = req.body;
+
     if (email) {
         req.email = email;
         return next();
