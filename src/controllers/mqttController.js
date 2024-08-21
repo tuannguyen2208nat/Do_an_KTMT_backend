@@ -12,13 +12,14 @@ let connected = false;
 
 const connect = async (req, res) => {
     if (connected) {
-        return;
+        return res.status(200).json({ message: 'Already connected to MQTT' });
     }
     const userId = req.user.id;
     const user = await modelUser.findById(userId).exec();
     if (!user) {
         return res.status(404).json({ error: 'User not found' });
     }
+
     const { AIO_USERNAME, AIO_KEY } = user;
     const clientId = 'client' + Math.random().toString(36).substring(7);
 
@@ -27,7 +28,7 @@ const connect = async (req, res) => {
         {
             port: AIO_PORT,
             clientId: clientId,
-        },
+        }
     );
 
     client.on('connect', () => {
@@ -39,7 +40,14 @@ const connect = async (req, res) => {
 
     client.on('error', (err) => {
         console.error('Connection error:', err);
-        res.status(500).json({ error: 'Failed to connect to MQTT' });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Failed to connect to MQTT' });
+        }
+    });
+
+    client.on('close', () => {
+        connected = false;
+        console.log('MQTT connection closed');
     });
 };
 
@@ -102,7 +110,7 @@ const publishdata = (req, res) => {
     const { AIO_USERNAME } = req.user;
     const { feed, data } = req.body;
 
-    if (!client) {
+    if (!client || !connected) {
         return res.status(400).json({ error: 'Not connected to MQTT' });
     }
 
@@ -120,7 +128,7 @@ const publishdata = (req, res) => {
 };
 
 const disconnect = (req, res) => {
-    if (client) {
+    if (client && connected) {
         client.end(() => {
             connected = false;
             console.log('Disconnected from MQTT');
