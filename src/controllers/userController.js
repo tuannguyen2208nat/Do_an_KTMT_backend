@@ -189,14 +189,14 @@ const edit_profile = async (req, res) => {
 const change_password = async (req, res) => {
     try {
         const { password, newpassword } = req.body;
+        const userId = req.user.id;
+        const user = await modelUser.findById(userId).exec();
+        console.log(password, newpassword);
         if (!password || !newpassword) {
             return res.status(400).json({
                 message: 'Current password and new password are required.',
             });
         }
-
-        const userId = req.user.id;
-        const user = await modelUser.findById(userId).exec();
 
         if (!user) {
             return res.status(404).json({
@@ -209,21 +209,12 @@ const change_password = async (req, res) => {
                 message: 'Invalid current password.',
             });
         }
-        const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, {
-            expiresIn: '1h',
-        });
-        const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, {
-            expiresIn: '7d',
-        });
         const hashedPassword = await bcrypt.hash(newpassword, 10);
-        user.refreshToken = refreshToken;
         user.password = hashedPassword;
         await user.save();
 
         return res.status(200).json({
             message: 'Password changed successfully.',
-            accessToken,
-            refreshToken
         });
     } catch (error) {
         return res.status(500).json({
