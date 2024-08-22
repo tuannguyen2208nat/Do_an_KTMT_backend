@@ -31,8 +31,6 @@ const getTemp = async (req, res) => {
     try {
         const userId = req.user.id;
         const { time } = req.body;
-        console.log(userId);
-        console.log(time);
 
         if (!time || !userId) {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
@@ -83,8 +81,8 @@ const getTemp = async (req, res) => {
                 ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(2)
                 : 0;
             allDates.push({
-                Date: dateString,
-                AverageTemperature: averageTemp
+                date: dateString,
+                value: averageTemp
             });
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -101,8 +99,6 @@ const getHumi = async (req, res) => {
     try {
         const userId = req.user.id;
         const { time } = req.body;
-        console.log(userId);
-        console.log(time);
 
         if (!time || !userId) {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
@@ -153,8 +149,8 @@ const getHumi = async (req, res) => {
                 ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(2)
                 : 0;
             allDates.push({
-                Date: dateString,
-                AverageTemperature: averageTemp
+                date: dateString,
+                value: averageTemp
             });
             currentDate.setDate(currentDate.getDate() + 1);
         }
