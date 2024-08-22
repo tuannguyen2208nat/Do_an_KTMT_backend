@@ -191,7 +191,6 @@ const change_password = async (req, res) => {
         const { password, newpassword } = req.body;
         const userId = req.user.id;
         const user = await modelUser.findById(userId).exec();
-        console.log(password, newpassword);
         if (!password || !newpassword) {
             return res.status(400).json({
                 message: 'Current password and new password are required.',

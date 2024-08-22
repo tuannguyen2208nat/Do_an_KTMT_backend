@@ -28,6 +28,25 @@ const setLog = async (req, res) => {
 }
 
 const getTemp = async (req, res) => {
+    const getAverageGroupedData = (dataArray, index, groupSize) => {
+        const group = dataArray.slice(index, index + groupSize);
+        const averageValue = (
+            group.reduce((sum, date) => sum + parseFloat(date.value), 0) / group.length
+        ).toFixed(2);
+
+        let middleDate;
+        if (index + groupSize >= dataArray.length) {
+            middleDate = dataArray[dataArray.length - 1].date;
+        } else {
+            middleDate = group[Math.floor(groupSize / 2)].date;
+        }
+
+        return {
+            date: middleDate,
+            value: averageValue
+        };
+    };
+
     try {
         const userId = req.user.id;
         const { time } = req.body;
@@ -75,6 +94,7 @@ const getTemp = async (req, res) => {
 
         const allDates = [];
         let currentDate = new Date(startDate);
+
         while (currentDate <= endDate) {
             const dateString = currentDate.toISOString().split('T')[0];
             const averageTemp = groupedData[dateString]
@@ -87,7 +107,24 @@ const getTemp = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        res.status(200).json(allDates);
+        let result = [];
+        if (time === 7) {
+            result = allDates.map(date => ({ ...date }));
+        }
+        else if (time === 30) {
+            for (let i = 0; i < allDates.length; i += 3) {
+                result.push(getAverageGroupedData(allDates, i, 3));
+            }
+        }
+        else if (time === 90) {
+            for (let i = 0; i < allDates.length; i += 9) {
+                result.push(getAverageGroupedData(allDates, i, 9));
+            }
+        }
+
+        if (result.length > 0) {
+            res.status(200).json(result);
+        }
 
     } catch (error) {
         console.error('Error retrieving data:', error);
@@ -96,6 +133,25 @@ const getTemp = async (req, res) => {
 };
 
 const getHumi = async (req, res) => {
+    const getAverageGroupedData = (dataArray, index, groupSize) => {
+        const group = dataArray.slice(index, index + groupSize);
+        const averageValue = (
+            group.reduce((sum, date) => sum + parseFloat(date.value), 0) / group.length
+        ).toFixed(2);
+
+        let middleDate;
+        if (index + groupSize >= dataArray.length) {
+            middleDate = dataArray[dataArray.length - 1].date;
+        } else {
+            middleDate = group[Math.floor(groupSize / 2)].date;
+        }
+
+        return {
+            date: middleDate,
+            value: averageValue
+        };
+    };
+
     try {
         const userId = req.user.id;
         const { time } = req.body;
@@ -155,7 +211,26 @@ const getHumi = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        res.status(200).json(allDates);
+        let result = [];
+        if (time === 7) {
+            result = allDates.map(date => ({ ...date }));
+        }
+        else if (time === 30) {
+            for (let i = 0; i < allDates.length; i += 3) {
+                result.push(getAverageGroupedData(allDates, i, 3));
+            }
+        }
+        else if (time === 90) {
+            for (let i = 0; i < allDates.length; i += 9) {
+                result.push(getAverageGroupedData(allDates, i, 9));
+            }
+        }
+
+        if (result.length > 0) {
+            res.status(200).json(result);
+        }
+
+
 
     } catch (error) {
         console.error('Error retrieving data:', error);
