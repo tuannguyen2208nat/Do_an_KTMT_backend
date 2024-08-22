@@ -5,11 +5,7 @@ const modelLog = require('../models/Log');
 const setLog = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await modelUser.findById(userId).exec();
         const { activity } = req;
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
         if (!activity) {
             return res.status(400).json({ error: 'Activity is required.' });
         }
