@@ -52,25 +52,32 @@ const getLog = async (req, res) => {
     }
 };
 
-const getTemp = async (req, res) => {
-    const getAverageGroupedData = (dataArray, index, groupSize) => {
-        const group = dataArray.slice(index, index + groupSize);
-        const averageValue = (
-            group.reduce((sum, date) => sum + parseFloat(date.value), 0) / group.length
-        ).toFixed(2);
+const calculateAverage = (allDates, step, result) => {
+    for (let i = 0; i < allDates.length; i += step) {
+        let sum = 0;
+        let count = 0;
 
-        let middleDate;
-        if (index + groupSize >= dataArray.length) {
-            middleDate = dataArray[dataArray.length - 1].date;
-        } else {
-            middleDate = group[Math.floor(groupSize / 2)].date;
+        for (let j = 0; j < step && i + j < allDates.length; j++) {
+            sum += parseFloat(allDates[i + j].value);
+            count++;
         }
 
-        return {
+        const averageValue = sum / count;
+        const middleDate = allDates[Math.min(i + Math.floor(step / 2), allDates.length - 1)].date;
+
+        result.push({
             date: middleDate,
-            value: averageValue
-        };
-    };
+            value: averageValue.toFixed(2)
+        });
+    }
+    const lastElement = allDates[allDates.length - 1];
+    result.push({
+        date: lastElement.date,
+        value: parseFloat(lastElement.value).toFixed(2)
+    });
+}
+
+const getTemp = async (req, res) => {
 
     try {
         const userId = req.user.id;
@@ -137,14 +144,10 @@ const getTemp = async (req, res) => {
             result = allDates.map(date => ({ ...date }));
         }
         else if (time === 30) {
-            for (let i = 0; i < allDates.length; i += 3) {
-                result.push(getAverageGroupedData(allDates, i, 3));
-            }
+            calculateAverage(allDates, 3, result);
         }
         else if (time === 90) {
-            for (let i = 0; i < allDates.length; i += 9) {
-                result.push(getAverageGroupedData(allDates, i, 9));
-            }
+            calculateAverage(allDates, 9, result);
         }
 
         if (result.length > 0) {
@@ -241,14 +244,10 @@ const getHumi = async (req, res) => {
             result = allDates.map(date => ({ ...date }));
         }
         else if (time === 30) {
-            for (let i = 0; i < allDates.length; i += 3) {
-                result.push(getAverageGroupedData(allDates, i, 3));
-            }
+            calculateAverage(allDates, 3, result);
         }
         else if (time === 90) {
-            for (let i = 0; i < allDates.length; i += 9) {
-                result.push(getAverageGroupedData(allDates, i, 9));
-            }
+            calculateAverage(allDates, 9, result);
         }
 
         if (result.length > 0) {
