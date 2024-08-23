@@ -35,6 +35,9 @@ const getLog = async (req, res) => {
         const startDate = new Date(start);
         const endDate = new Date(end);
 
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+
         const logs = await modelLog.find({
             userID: userId,
             Date: {
