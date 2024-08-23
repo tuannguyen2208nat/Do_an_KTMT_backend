@@ -7,6 +7,8 @@ const modelUser = require('../models/Users');
 
 const AIO_PORT = process.env.AIO_PORT;
 
+let AIO_USERNAME;
+
 let client = null;
 let connected = false;
 
@@ -20,7 +22,8 @@ const connect = async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    const { AIO_USERNAME, AIO_KEY } = user;
+    const { AIO_KEY } = user;
+    AIO_USERNAME = user.AIO_USERNAME;
     const clientId = 'client' + Math.random().toString(36).substring(7);
 
     client = mqtt.connect(
@@ -106,9 +109,8 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
     });
 };
 
-const publishdata = (req, res) => {
-    const { AIO_USERNAME } = req.user;
-    const { feed, data } = req.body;
+const publishdata = (req, res, next) => {
+    const { feed, data } = req;
 
     if (!client || !connected) {
         return res.status(400).json({ error: 'Not connected to MQTT' });
@@ -122,7 +124,7 @@ const publishdata = (req, res) => {
             return res.status(500).json({ error: 'Failed to publish data' });
         } else {
             console.log(`Data published to ${feedPath}: ${data}`);
-            res.status(200).json({ message: `Data published to ${feedPath}`, data });
+            next();
         }
     });
 };

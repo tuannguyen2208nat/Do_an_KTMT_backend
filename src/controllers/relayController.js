@@ -1,4 +1,5 @@
 const Relay = require('../models/Relay');
+const { publishdata } = require('./mqttController');
 
 const add_relay = async (req, res, next) => {
     try {
@@ -86,6 +87,8 @@ const set_status = async (req, res, next) => {
         }
         relay.state = state;
         await relay.save();
+        req.data = `!RELAY${relay_id}:${relay.state ? 'ON' : 'OFF'}#`;
+        req.feed = 'relay';
         req.activity = `Relay ${relay_id} state changed to ${relay.state ? 'on' : 'off'}`;
         next();
     }
