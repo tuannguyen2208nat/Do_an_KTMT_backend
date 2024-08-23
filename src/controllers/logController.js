@@ -47,6 +47,7 @@ const getLog = async (req, res) => {
         })
             .select('activity Date')
             .exec();
+
         res.status(200).json(logs);
 
     } catch (error) {
