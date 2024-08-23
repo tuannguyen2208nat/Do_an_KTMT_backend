@@ -13,7 +13,7 @@ router.use('/', usersRouter);
 router.use('/sensor', authenticateToken, sensorRoutes);
 router.use('/mqtt', authenticateToken, mqttRoutes);
 router.use('/email', emailRoutes);
-router.use('/log', authenticateToken, logRoutes);
+router.use('/log', logRoutes);
 router.use('/relay', authenticateToken, relayRoutes);
 
 module.exports = router;

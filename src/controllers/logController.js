@@ -23,6 +23,35 @@ const setLog = async (req, res) => {
     }
 }
 
+const getLog = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { start, end } = req.body;
+
+        if (!start || !end) {
+            return res.status(400).json({ error: 'Start and end day are requried' });
+        }
+
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        const logs = await modelLog.find({
+            userID: userId,
+            Date: {
+                $gte: startDate,
+                $lte: endDate
+            }
+        })
+            .select('activity Date')
+            .exec();
+        res.status(200).json(logs);
+
+    } catch (error) {
+        console.error('Error retrieving logs:', error);
+        res.status(500).json({ error: 'An error occurred while retrieving logs.' });
+    }
+};
+
 const getTemp = async (req, res) => {
     const getAverageGroupedData = (dataArray, index, groupSize) => {
         const group = dataArray.slice(index, index + groupSize);
@@ -234,4 +263,4 @@ const getHumi = async (req, res) => {
     }
 }
 
-module.exports = { setLog, getTemp, getHumi }
+module.exports = { setLog, getLog, getTemp, getHumi }
