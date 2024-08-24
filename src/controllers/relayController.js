@@ -47,6 +47,12 @@ const set_relay = async (req, res, next) => {
         if (!relay) {
             return res.status(404).json({ error: 'Relay not found.' });
         }
+        if (new_relay_id) {
+            const existingRelay = await Relay.findOne({ relay_id: new_relay_id, userID: userID });
+            if (existingRelay) {
+                return res.status(400).json({ error: 'New relay id already exists.' });
+            }
+        }
         if (!new_relay_id && relay_name) {
             relay.relay_name = relay_name;
             req.activity = `Relay ${relay_id} name changed to ${relay_name}`;
