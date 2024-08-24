@@ -1,5 +1,4 @@
 const Relay = require('../models/Relay');
-const { publishdata } = require('./mqttController');
 
 const add_relay = async (req, res, next) => {
     try {
@@ -14,8 +13,7 @@ const add_relay = async (req, res, next) => {
         if (!relay_name) {
             relay_name = `Relay ${relay_id}`;
         }
-        const state = false;
-        const relay = new Relay({ userID, relay_id, relay_name, state });
+        const relay = new Relay({ userID, relay_id, relay_name, state: false, relay_home: false });
         await relay.save();
         req.activity = `Relay ${relay_id} added`;
         next();
@@ -119,10 +117,56 @@ const delete_relay = async (req, res, next) => {
     }
 }
 
+const set_relay_home = async (req, res, next) => {
+    try {
+        const userID = req.user.id;
+        const { relay_id, relay_home } = req.body;
+        if (!relay_id) {
+            return res.status(400).json({ error: 'Relay id is required.' });
+        }
+        const relay = await Relay.findOne({ relay_id: relay_id, userID: userID });
+        if (!relay) {
+            return res.status(404).json({ error: 'Relay not found.' });
+        }
+        if (relay_home) {
+            const relayHomeCount = await Relay.countDocuments({ userID: userID, relay_home: true });
+            if (relayHomeCount >= 4) {
+                return res.status(400).json({ error: 'Maximum of 4 relays on HomePage' });
+            }
+        }
+
+        relay.relay_home = relay_home;
+        await relay.save();
+
+        req.activity = `Relay ${relay_id} ${relay_home ? 'is' : 'is not'} shown on HomePage`;
+        next();
+    }
+    catch (error) {
+        console.error('Error setting data:', error);
+        res.status(500).json({ error: 'An error occurred while setting data.' });
+    }
+};
+
+
+const get_relay_home = async (req, res) => {
+    try {
+        const userID = req.user.id;
+        const relays = await Relay.find({ userID: userID, relay_home: true });
+        const relaysArray = [...relays];
+        res.status(200).json(relaysArray);
+    }
+    catch (error) {
+        console.error('Error setting data:', error);
+        res.status(500).json({ error: 'An error occurred while setting data.' });
+    }
+}
+
 module.exports = {
     add_relay,
     get_relay,
     set_relay,
     set_status,
     delete_relay,
+    set_relay_home,
+    get_relay_home
 };

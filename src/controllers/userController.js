@@ -174,8 +174,11 @@ const edit_profile = async (req, res) => {
         }
 
         await user.save();
+        const userProfile = user.toObject();
+        delete userProfile.password;
         return res.status(200).json({
             message: 'Profile updated successfully',
+            data: userProfile,
         });
     }
     catch (error) {
