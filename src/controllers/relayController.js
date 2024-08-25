@@ -13,6 +13,10 @@ const add_relay = async (req, res, next) => {
         if (!relay_name) {
             relay_name = `Relay ${relay_id}`;
         }
+        const existingRelay = await Relay.findOne({ userID, relay_id });
+        if (existingRelay) {
+            return res.status(400).json({ error: 'Relay with this ID already exists for this user.' });
+        }
         const relay = new Relay({ userID, relay_id, relay_name, state: false, relay_home: false });
         await relay.save();
         req.activity = `Relay ${relay_id} added`;
