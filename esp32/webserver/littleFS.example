@@ -1,0 +1,226 @@
+#include <LittleFS.h>
+
+void createFile(String path, String content)
+{
+  File file = LittleFS.open(path, "w");
+  if (!file)
+  {
+    Serial.println("Không thể mở file để ghi.");
+    return;
+  }
+
+  file.print(content); // Ghi nội dung vào file
+  file.close();        // Đóng file sau khi ghi xong
+}
+
+void setup()
+{
+  Serial.begin(115200);
+
+  // Khởi tạo LittleFS
+  if (!LittleFS.begin())
+  {
+    Serial.println("LittleFS không khởi tạo được!");
+    return;
+  }
+  Serial.println("LittleFS khởi tạo thành công.");
+
+  // Nội dung của index.html
+  String htmlContent = "<!DOCTYPE HTML>\n"
+                       "<html>\n"
+                       "<head>\n"
+                       "    <title>ESP32_WEB_SERVER</title>\n"
+                       "    <link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\">\n"
+                       "    <script src=\"script.js\"></script>\n"
+                       "</head>\n"
+                       "<body>\n"
+                       "    <div class=\"topnav\">\n"
+                       "        <h1>ESP WebSocket Server</h1>\n"
+                       "    </div>\n"
+                       "    <div class=\"content\">\n"
+                       "        <div class=\"card\">\n"
+                       "            <p>Temperature : <span id=\"temperature\">0.00</span> &deg;C</p>\n"
+                       "            <p>Humidity : <span id=\"humidity\">0.00</span> %</p>\n"
+                       "        </div>\n"
+                       "    </div>\n"
+                       "    <div class=\"content content-container\">\n"
+                       "        <div class=\"card\">\n"
+                       "            <h2>Relay 1</h2>\n"
+                       "            <p class=\"state\">State : <span id=\"state1\">OFF</span></p>\n"
+                       "            <p><button onclick=\"toggleButton(1)\" class=\"button\">Toggle</button></p>\n"
+                       "        </div>\n"
+                       "        <div class=\"card\">\n"
+                       "            <h2>Relay 2</h2>\n"
+                       "            <p class=\"state\">State : <span id=\"state2\">OFF</span></p>\n"
+                       "            <p><button onclick=\"toggleButton(2)\" class=\"button\">Toggle</button></p>\n"
+                       "        </div>\n"
+                       "        <div class=\"card\">\n"
+                       "            <h2>Relay 3</h2>\n"
+                       "            <p class=\"state\">State : <span id=\"state3\">OFF</span></p>\n"
+                       "            <p><button onclick=\"toggleButton(3)\" class=\"button\">Toggle</button></p>\n"
+                       "        </div>\n"
+                       "        <div class=\"card\">\n"
+                       "            <h2>Relay 4</h2>\n"
+                       "            <p class=\"state\">State : <span id=\"state4\">OFF</span></p>\n"
+                       "            <p><button onclick=\"toggleButton(4)\" class=\"button\">Toggle</button></p>\n"
+                       "        </div>\n"
+                       "    </div>\n"
+                       "    <script src=\"script.js\"></script>\n"
+                       "</body>\n"
+                       "</html>";
+
+  // Nội dung của styles.css
+  String cssContent = "body {\n"
+                      "    font-family: Arial, sans-serif;\n"
+                      "    background-color: #f0f0f0;\n"
+                      "    color: #333;\n"
+                      "    text-align: center;\n"
+                      "}\n"
+                      "\n"
+                      "h1 {\n"
+                      "    font-size: 1.8rem;\n"
+                      "    color: white;\n"
+                      "}\n"
+                      "\n"
+                      "h2 {\n"
+                      "    font-size: 1.5rem;\n"
+                      "    font-weight: bold;\n"
+                      "    color: #143642;\n"
+                      "}\n"
+                      "\n"
+                      ".topnav {\n"
+                      "    overflow: hidden;\n"
+                      "    background-color: #143642;\n"
+                      "}\n"
+                      "\n"
+                      ".content {\n"
+                      "    padding: 30px;\n"
+                      "    max-width: 1200px;\n"
+                      "    margin: 0 auto;\n"
+                      "}\n"
+                      "\n"
+                      ".content-container {\n"
+                      "    display: flex;\n"
+                      "    flex-wrap: wrap;\n"
+                      "    justify-content: center;\n"
+                      "}\n"
+                      "\n"
+                      ".card {\n"
+                      "    background-color: #F8F7F9;\n"
+                      "    box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);\n"
+                      "    padding-top: 10px;\n"
+                      "    padding-bottom: 20px;\n"
+                      "    margin: 10px;\n"
+                      "    flex: 1 1 calc(50% - 20px); /* Default to 2 cards per row */\n"
+                      "}\n"
+                      "\n"
+                      "@media (min-width: 1024px) {\n"
+                      "    .card {\n"
+                      "        flex: 1 1 calc(25% - 20px); /* 4 cards per row on larger screens */\n"
+                      "    }\n"
+                      "}\n"
+                      "\n"
+                      "@media (max-width: 767px) {\n"
+                      "    .card {\n"
+                      "        flex: 1 1 calc(100% - 20px); /* 1 card per row on very small screens */\n"
+                      "    }\n"
+                      "}\n"
+                      "\n"
+                      "p {\n"
+                      "    font-size: 1.5rem;\n"
+                      "}\n"
+                      "\n"
+                      "#temperature, #humidity {\n"
+                      "    font-weight: bold;\n"
+                      "}\n"
+                      "\n"
+                      ".button {\n"
+                      "    padding: 15px 50px;\n"
+                      "    font-size: 24px;\n"
+                      "    text-align: center;\n"
+                      "    outline: none;\n"
+                      "    color: #fff;\n"
+                      "    background-color: #0f8b8d;\n"
+                      "    border: none;\n"
+                      "    border-radius: 5px;\n"
+                      "    -webkit-touch-callout: none;\n"
+                      "    -webkit-user-select: none;\n"
+                      "    -khtml-user-select: none;\n"
+                      "    -moz-user-select: none;\n"
+                      "    -ms-user-select: none;\n"
+                      "    user-select: none;\n"
+                      "    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);\n"
+                      "}\n"
+                      "\n"
+                      ".button:active {\n"
+                      "    background-color: #0f8b8d;\n"
+                      "    box-shadow: 2px 2px #CDCDCD;\n"
+                      "    transform: translateY(2px);\n"
+                      "}\n"
+                      "\n"
+                      ".state {\n"
+                      "    font-size: 1.5rem;\n"
+                      "    color: #8c8c8c;\n"
+                      "    font-weight: bold;\n"
+                      "}\n";
+
+  // Nội dung của script.js
+  String jsContent = "var gateway = `ws://${window.location.hostname}/ws`;\n"
+                     "var websocket;\n"
+                     "window.addEventListener('load', onLoad);\n"
+                     "function onLoad(event) {\n"
+                     "    initWebSocket();\n"
+                     "}\n"
+                     "function toggleButton(index) {\n"
+                      "var state = document.getElementById('state' + index).innerText;\n"
+                      "var message = JSON.stringify({\n"
+                      " index: index,\n"
+                      "state: state\n"
+                      "});\n"
+                     "    websocket.send(message);\n"
+                     "}\n"
+                     "function onOpen(event) {\n"
+                     "    console.log('Connection opened');\n"
+                     "}\n"
+                     "function onClose(event) {\n"
+                     "    console.log('Connection closed');\n"
+                     "    setTimeout(initWebSocket, 2000);\n"
+                     "}\n"
+                     "function initWebSocket() {\n"
+                     "    console.log('Trying to open a WebSocket connection…');\n"
+                     "    websocket = new WebSocket(gateway);\n"
+                     "    websocket.onopen = onOpen;\n"
+                     "    websocket.onclose = onClose;\n"
+                     "    websocket.onmessage = onMessage;\n"
+                     "}\n"
+                     "function onMessage(event) {\n"
+                     "    var data;\n"
+                     "    console.log(event.data);\n"
+                     "    data = JSON.parse(event.data);\n"
+                     "    if (data.relay_id) {\n"
+                     "        var index = data.relay_id;\n"
+                     "        var state = data.state;\n"
+                     "        document.getElementById(\"state\" + index).innerHTML = state;\n"
+                     "    }\n"
+                     "    if (data.getState1 && data.getState2 && data.getState3 && data.getState4) {\n"
+                     "        document.getElementById(\"state1\").innerHTML = data.getState1;\n"
+                     "        document.getElementById(\"state2\").innerHTML = data.getState2;\n"
+                     "        document.getElementById(\"state3\").innerHTML = data.getState3;\n"
+                     "        document.getElementById(\"state4\").innerHTML = data.getState4;\n"
+                     "    }\n"
+                     "    if (data.temperature && data.humidity ) {\n"
+                     "        document.getElementById('temperature').innerHTML = data.temperature.toFixed(2);\n"
+                     "        document.getElementById('humidity').innerHTML = data.humidity.toFixed(2);\n"
+                     "    }\n"
+                     "}\n";
+
+  // Tạo các file với nội dung mới
+  createFile("/index.html", htmlContent);
+  createFile("/styles.css", cssContent);
+  createFile("/script.js", jsContent);
+}
+
+void loop()
+{
+  
+}

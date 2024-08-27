@@ -81,6 +81,7 @@ const register = async (req, res) => {
             username,
             email,
             password: hashedPassword,
+            role: 'user',
             AIO_USERNAME: aioUser,
             AIO_KEY: aioKey,
             phone_number: phone,
