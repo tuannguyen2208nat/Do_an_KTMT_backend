@@ -5,6 +5,7 @@
 
 // Relay ON command template
 const uint8_t relay_ON[][8] = {
+    {},
     {1, 5, 0, 0, 255, 0, 140, 58},   // Relay 0 ON
     {1, 5, 0, 1, 255, 0, 221, 250},  // Relay 1 ON
     {1, 5, 0, 2, 255, 0, 45, 250},   // Relay 2 ON
@@ -42,6 +43,7 @@ const uint8_t relay_ON[][8] = {
 
 // Relay OFF command template
 const uint8_t relay_OFF[][8] = {
+    {},
     {1, 5, 0, 0, 0, 0, 205, 202},  // Relay 0 OFF
     {1, 5, 0, 1, 0, 0, 156, 10},   // Relay 1 OFF
     {1, 5, 0, 2, 0, 0, 108, 10},   // Relay 2 OFF
