@@ -94,15 +94,11 @@ const connect = async (req, res) => {
     }
 };
 
-
 const publishdata = (req, res, next) => {
     if (!connected) {
         return res.status(400).json({ message: 'Chưa kết nối' });
     }
-
-    const data = req.body;
-    const relayId = data.relay_id;
-    const state = data.state;
+    const { relayid, state } = req;
     try {
         var status;
         if (!state) {
@@ -111,7 +107,7 @@ const publishdata = (req, res, next) => {
             status = "OFF";
         }
         const jsonData = JSON.stringify({
-            index: relayId,
+            index: relayid,
             state: status
         });
         client.send(jsonData);
@@ -121,7 +117,6 @@ const publishdata = (req, res, next) => {
         res.status(500).json({ message: 'Lỗi khi gửi dữ liệu qua WebSocket' });
     }
 };
-
 
 const disconnect = (req, res) => {
     if (!connected) {

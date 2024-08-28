@@ -110,14 +110,12 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
 };
 
 const publishdata = (req, res, next) => {
-    const { feed, data } = req;
-
+    const { feed, relayid, state } = req;
+    const data = `!RELAY${relayid}:${state ? 'ON' : 'OFF'}#`;
     if (!client || !connected) {
         return res.status(400).json({ error: 'Not connected to MQTT' });
     }
-
     const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
-
     client.publish(feedPath, data, (err) => {
         if (err) {
             console.error('Error publishing data:', err);
