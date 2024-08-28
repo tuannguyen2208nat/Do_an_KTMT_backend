@@ -43,6 +43,9 @@ const Users = new Schema({
         type: String,
         required: true,
     },
+    webServerIp: {
+        type: String,
+    },
     accessToken: {
         type: String,
     },
