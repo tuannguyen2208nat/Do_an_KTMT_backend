@@ -1,1 +1,0 @@
-The backend uses the ESP32 web server.
