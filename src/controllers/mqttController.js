@@ -42,10 +42,6 @@ const connect = async (req, res) => {
             res.status(500).json({ error: 'Failed to connect to MQTT' });
         }
     });
-
-    client.on('close', () => {
-        console.log('MQTT connection closed');
-    });
 };
 
 const subscribeToFeeds = (client, AIO_USERNAME, userId) => {

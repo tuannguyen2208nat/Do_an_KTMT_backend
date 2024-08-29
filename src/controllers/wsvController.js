@@ -70,11 +70,6 @@ const connect = async (req, res) => {
             } catch (error) {
                 console.error('Error processing message:', error);
             }
-
-        });
-
-        client.on('close', () => {
-            console.log('WebSocket connection closed');
         });
 
         client.on('error', (error) => {
@@ -101,7 +96,6 @@ const publishdata = (req, res, next) => {
             index: relayid,
             state: status
         });
-        console.log('Sending data over WebSocket:', jsonData);
         client.send(jsonData);
         next();
     } catch (error) {

@@ -45,13 +45,9 @@ const disconnect = async (req, res, next) => {
         return res.status(400).json({ message: 'No active connection to disconnect' });
     }
     req.controller = currentConnection === 'MQTT' ? mqttController : wsvController;
-    try {
-        await req.controller.disconnect();
-        connected = false;
-        currentConnection = null;
-    } catch (error) {
-        return res.status(500).json({ message: 'Error during disconnection', error: error.message });
-    }
+    await req.controller.disconnect();
+    connected = false;
+    currentConnection = null;
 };
 
 module.exports = {

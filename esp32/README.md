@@ -1,1 +1,1 @@
-The backend uses webserver.
+The code for the ESP32-S3 connects both the WebSocket web server and MQTT.
