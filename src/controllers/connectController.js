@@ -31,16 +31,28 @@ const connect = async (req, res, next) => {
     next();
 }
 
-const publishdata = async (req, res, next) => {
-    const { connect } = req.body.connect;
-    req.controller = connect === 'MQTT' ? mqttController : wsvController;
-    next();
+const publishdata = async (req, res) => {
+    req.controller = currentConnection === 'MQTT' ? mqttController : wsvController;
+    try {
+        await req.controller.publishdata();
+    } catch (error) {
+        return res.status(500).json({ message: 'Error during disconnection', error: error.message });
+    }
 }
 
 const disconnect = async (req, res, next) => {
+    if (!connected) {
+        return res.status(400).json({ message: 'No active connection to disconnect' });
+    }
     req.controller = currentConnection === 'MQTT' ? mqttController : wsvController;
-    next();
-}
+    try {
+        await req.controller.disconnect();
+        connected = false;
+        currentConnection = null;
+    } catch (error) {
+        return res.status(500).json({ message: 'Error during disconnection', error: error.message });
+    }
+};
 
 module.exports = {
     connect,
