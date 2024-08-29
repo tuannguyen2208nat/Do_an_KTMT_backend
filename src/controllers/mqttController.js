@@ -10,12 +10,8 @@ const AIO_PORT = process.env.AIO_PORT;
 let AIO_USERNAME;
 
 let client = null;
-let connected = false;
 
 const connect = async (req, res) => {
-    if (connected) {
-        return res.status(200).json({ message: 'Already connected to MQTT' });
-    }
     const userId = req.user.id;
     const user = await modelUser.findById(userId).exec();
     if (!user) {
@@ -35,7 +31,6 @@ const connect = async (req, res) => {
     );
 
     client.on('connect', () => {
-        connected = true;
         console.log('Connected to MQTT');
         res.status(200).json({ message: 'Connected to MQTT' });
         subscribeToFeeds(client, AIO_USERNAME, userId);
@@ -49,7 +44,6 @@ const connect = async (req, res) => {
     });
 
     client.on('close', () => {
-        connected = false;
         console.log('MQTT connection closed');
     });
 };
@@ -112,8 +106,8 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
 const publishdata = (req, res, next) => {
     const { feed, relayid, state } = req;
     const data = `!RELAY${relayid}:${state ? 'ON' : 'OFF'}#`;
-    if (!client || !connected) {
-        return res.status(400).json({ error: 'Not connected to MQTT' });
+    if (!client) {
+        return res.status(200).json({ error: 'Not connected to MQTT' });
     }
     const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
     client.publish(feedPath, data, (err) => {
@@ -128,11 +122,9 @@ const publishdata = (req, res, next) => {
 };
 
 const disconnect = (req, res) => {
-    if (client && connected) {
+    if (client) {
         client.end(() => {
-            connected = false;
             console.log('Disconnected from MQTT');
-            res.status(200).json({ message: 'Disconnected from MQTT' });
         });
     } else {
         res.status(400).json({ error: 'Not connected to MQTT' });

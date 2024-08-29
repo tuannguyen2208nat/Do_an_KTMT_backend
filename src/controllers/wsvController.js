@@ -6,13 +6,8 @@ const Location = require('../models/Location');
 const modelUser = require('../models/Users');
 
 let client = null;
-let connected = false;
 
-// Thiết lập kết nối WebSocket
 const connect = async (req, res) => {
-    if (connected) {
-        return res.status(200).json({ message: 'Already connected to MQTT' });
-    }
     const userId = req.user.id;
     const user = await modelUser.findById(userId).exec();
     if (!user) {
@@ -26,15 +21,14 @@ const connect = async (req, res) => {
         client = new WebSocket(wsUrl);
 
         client.on('open', () => {
-            connected = true;
-            console.log('Đã kết nối đến WebSocket server');
-            res.status(200).json({ message: 'Kết nối thành công' });
+            console.log('Connected to WebSocket Webserver');
+            res.status(200).json({ message: 'Connected to WebSocket Webserver' });
         });
 
         client.on('message', (message) => {
             if (Buffer.isBuffer(message)) {
                 message = message.toString();
-                console.log('Dữ liệu từ WebSocket:', message);
+                console.log('Data received from WebSocket:', message);
             }
             try {
                 const data = JSON.parse(message);
@@ -80,24 +74,21 @@ const connect = async (req, res) => {
         });
 
         client.on('close', () => {
-            connected = false;
-            console.log('Kết nối WebSocket đã đóng');
+            console.log('WebSocket connection closed');
         });
 
         client.on('error', (error) => {
-            console.error('Lỗi WebSocket:', error);
-            res.status(500).json({ message: 'Lỗi kết nối WebSocket' });
+            console.error('WebSocket error:', error);
+            res.status(500).json({ message: 'WebSocket connection error' });
         });
     } catch (error) {
-        console.error('Lỗi khi kết nối WebSocket:', error);
-        res.status(500).json({ message: 'Lỗi khi kết nối WebSocket' });
+        console.error('Error connecting to WebSocket:', error);
+        res.status(500).json({ message: 'Error connecting to WebSocket' });
     }
 };
 
 const publishdata = (req, res, next) => {
-    if (!connected) {
-        return res.status(400).json({ message: 'Chưa kết nối' });
-    }
+    console.log('Publishing data to WebSocket');
     const { relayid, state } = req;
     try {
         var status;
@@ -110,26 +101,22 @@ const publishdata = (req, res, next) => {
             index: relayid,
             state: status
         });
+        console.log('Sending data over WebSocket:', jsonData);
         client.send(jsonData);
-        res.status(200).json({ message: 'Dữ liệu đã được gửi' });
+        next();
     } catch (error) {
-        console.error('Lỗi khi gửi dữ liệu qua WebSocket:', error);
-        res.status(500).json({ message: 'Lỗi khi gửi dữ liệu qua WebSocket' });
+        console.error('Error sending data over WebSocket:', error);
+        res.status(500).json({ message: 'Error sending data over WebSocket' });
     }
 };
 
 const disconnect = (req, res) => {
-    if (!connected) {
-        return res.status(400).json({ message: 'Chưa kết nối' });
-    }
-
     try {
         client.close();
-        connected = false;
-        res.status(200).json({ message: 'Đã ngắt kết nối' });
+        console.log('Disconnected from WebSocket');
     } catch (error) {
-        console.error('Lỗi khi ngắt kết nối WebSocket:', error);
-        res.status(500).json({ message: 'Lỗi khi ngắt kết nối WebSocket' });
+        console.error('Error disconnecting WebSocket:', error);
+        res.status(500).json({ message: 'Error disconnecting WebSocket' });
     }
 };
 

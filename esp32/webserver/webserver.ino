@@ -39,10 +39,10 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 
         int index = doc["index"];
         String state = doc["state"].as<String>();
+        String newState = (state == "ON") ? "OFF" : "ON";
 
         if (index >= 1 && index <= 32)
         {
-            String newState = (state == "ON") ? "OFF" : "ON";
             if (newState == "ON")
             {
                 sendModbusCommand(relay_ON[index], sizeof(relay_ON[index]));
@@ -51,9 +51,9 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
             {
                 sendModbusCommand(relay_OFF[index], sizeof(relay_OFF[index]));
             }
-            String response = "{\"relay_id\":" + String(index) + ",\"state\":\"" + newState + "\"}";
-            ws.textAll(response);
         }
+        String response = "{\"relay_id\":" + String(index) + ",\"state\":\"" + newState + "\"}";
+        ws.textAll(response);
     }
 }
 
