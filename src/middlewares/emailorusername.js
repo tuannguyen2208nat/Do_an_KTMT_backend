@@ -14,7 +14,7 @@ const parseEmailOrUsername = async (req, res, next) => {
     }
 
     if (!emailOrusername) {
-        return res.status(400).json({ error: 'emailOrusername is required' });
+        return res.status(400).json({ error: 'Username and password are required.' });
     }
 
     if (isEmail(emailOrusername)) {
@@ -23,7 +23,7 @@ const parseEmailOrUsername = async (req, res, next) => {
         const username = emailOrusername;
         const user = await modelUser.findOne({ username }).exec();
         if (!user) {
-            return res.status(404).json({ error: 'Invalid user' });
+            return res.status(404).json({ error: 'Invalid username or password' });
         }
         req.email = user.email;
     }

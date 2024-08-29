@@ -108,7 +108,6 @@ const publishdata = (req, res, next) => {
     const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
     client.publish(feedPath, data, (err) => {
         if (err) {
-            console.error('Error publishing data:', err);
             return res.status(500).json({ error: 'Failed to publish data' });
         } else {
             console.log(`Data published to ${feedPath}: ${data}`);

@@ -25,7 +25,7 @@ const send_code = async (req, res) => {
         const { email } = req;
         if (!email) {
             return res.status(400).json({
-                message: 'Email is required.',
+                error: 'Email is required.',
             });
         }
         const code = generateVerificationCode();
@@ -39,8 +39,7 @@ const send_code = async (req, res) => {
     }
     catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
@@ -52,7 +51,7 @@ const confirm_code = async (req, res) => {
 
         if (!email || !verificationCode) {
             return res.status(400).json({
-                message: 'Email and code are required.',
+                error: 'Email and code are required.',
             });
         }
         const storedCode = verificationCodes[email];
@@ -63,14 +62,13 @@ const confirm_code = async (req, res) => {
             });
         } else {
             return res.status(400).json({
-                message: 'Invalid verification code.',
+                error: 'Invalid verification code.',
             });
         }
     }
     catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }

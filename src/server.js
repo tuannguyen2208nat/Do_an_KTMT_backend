@@ -2,7 +2,6 @@ require('dotenv').config();
 var express = require('express');
 var cors = require('cors');
 
-const configViewEngine = require('./config/viewEngine');
 const database = require('./config/database');
 const index = require('./routes/index');
 
@@ -14,9 +13,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use('/', index);
-app.use(express.urlencoded({ extended: true }));// Middleware to parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true }));
 
-configViewEngine(app);
 database.connect();
 
 app.listen(port, hostname, () => {

@@ -74,11 +74,11 @@ const connect = async (req, res) => {
 
         client.on('error', (error) => {
             console.error('WebSocket error:', error);
-            res.status(500).json({ message: 'WebSocket connection error' });
+            res.status(500).json({ error: 'WebSocket connection error' });
         });
     } catch (error) {
         console.error('Error connecting to WebSocket:', error);
-        res.status(500).json({ message: 'Error connecting to WebSocket' });
+        res.status(500).json({ error: 'Error connecting to WebSocket' });
     }
 };
 
@@ -100,7 +100,7 @@ const publishdata = (req, res, next) => {
         next();
     } catch (error) {
         console.error('Error sending data over WebSocket:', error);
-        res.status(500).json({ message: 'Error sending data over WebSocket' });
+        res.status(500).json({ error: 'Error sending data over WebSocket' });
     }
 };
 
@@ -110,7 +110,7 @@ const disconnect = (req, res) => {
         console.log('Disconnected from WebSocket');
     } catch (error) {
         console.error('Error disconnecting WebSocket:', error);
-        res.status(500).json({ message: 'Error disconnecting WebSocket' });
+        res.status(500).json({ error: 'Error disconnecting WebSocket' });
     }
 };
 

@@ -13,16 +13,15 @@ const login = async (req, res) => {
 
         if (!username || !password) {
             return res.status(400).json({
-                message: 'Username and password are required.',
+                error: 'Username and password are required.',
             });
         }
 
         if (user) {
             const isPasswordValid = await bcrypt.compare(password, user.password);
-
             if (!isPasswordValid) {
                 return res.status(401).json({
-                    message: 'Invalid username or password',
+                    error: 'Invalid username or password',
                 });
             }
 
@@ -44,13 +43,12 @@ const login = async (req, res) => {
             });
         } else {
             return res.status(401).json({
-                message: 'Invalid username or password',
+                error: 'Invalid username or password',
             });
         }
     } catch (error) {
         return res.status(500).json({
-            message: 'An error occurred',
-            error: error.message,
+            error: 'Server error'
         });
     }
 };
@@ -58,20 +56,18 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     try {
         const { username, email, password, aioUser, aioKey, phone } = req.body;
-
         if (!username || !email || !password || !aioUser || !aioKey || !phone) {
             return res.status(400).json({
                 message: 'Username, email, password ,phone, AIO_USERNAME and AIO_KEY are required.',
             });
         }
-
         const existingUser = await modelUser.findOne({
             $or: [{ email }, { username }]
         });
 
         if (existingUser) {
             return res.status(400).json({
-                message: 'Email or username already exists.',
+                error: 'Email or username already exists.',
             });
         }
 
@@ -104,8 +100,7 @@ const register = async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error'
         });
     }
 };
@@ -120,13 +115,12 @@ const logout = async (req, res) => {
         user.refreshToken = '';
         await user.save();
         return res.status(200).json({
-            message: 'User logged out successfully',
+            message: 'Logout successfully',
         });
 
     } catch (error) {
         return res.status(500).json({
-            message: 'An error occurred',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
@@ -147,8 +141,7 @@ const get_profile = async (req, res) => {
     }
     catch (error) {
         return res.status(500).json({
-            message: 'An error occurred',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
@@ -184,8 +177,7 @@ const edit_profile = async (req, res) => {
     }
     catch (error) {
         return res.status(500).json({
-            message: 'An error occurred',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
@@ -197,19 +189,19 @@ const change_password = async (req, res) => {
         const user = await modelUser.findById(userId).exec();
         if (!password || !newpassword) {
             return res.status(400).json({
-                message: 'Current password and new password are required.',
+                error: 'Current password and new password are required.',
             });
         }
 
         if (!user) {
             return res.status(404).json({
-                message: 'User not found.',
+                error: 'User not found.',
             });
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({
-                message: 'Invalid current password.',
+                error: 'Invalid current password.',
             });
         }
         const hashedPassword = await bcrypt.hash(newpassword, 10);
@@ -221,8 +213,7 @@ const change_password = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'An error occurred.',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
@@ -234,7 +225,7 @@ const forgot_password = async (req, res) => {
         const user = await modelUser.findOne({ email });
         if (!user) {
             return res.status(404).json({
-                message: 'User not found.',
+                error: 'User not found.',
             });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -247,8 +238,7 @@ const forgot_password = async (req, res) => {
     }
     catch (error) {
         return res.status(500).json({
-            message: 'An error occurred.',
-            error: error.message,
+            error: 'Server error',
         });
     }
 

@@ -8,11 +8,11 @@ const connect = async (req, res, next) => {
     const newConnection = req.body.connect;
 
     if (!newConnection || (newConnection !== 'MQTT' && newConnection !== 'WSV')) {
-        return res.status(400).json({ message: 'Please provide a valid mode (MQTT or WSV)' });
+        return res.status(400).json({ error: 'Please provide a valid mode (MQTT or WSV)' });
     }
 
     if (connected && currentConnection === newConnection) {
-        return res.status(200).json({ message: `Already connected to ${newConnection}` });
+        return res.status(200).json({ error: `Already connected to ${newConnection}` });
     }
 
     if (connected) {
@@ -36,13 +36,13 @@ const publishdata = async (req, res) => {
     try {
         await req.controller.publishdata();
     } catch (error) {
-        return res.status(500).json({ message: 'Error during disconnection', error: error.message });
+        return res.status(500).json({ error: 'Error during disconnection' });
     }
 }
 
 const disconnect = async (req, res, next) => {
     if (!connected) {
-        return res.status(400).json({ message: 'No active connection to disconnect' });
+        return res.status(400).json({ error: 'No active connection to disconnect' });
     }
     req.controller = currentConnection === 'MQTT' ? mqttController : wsvController;
     await req.controller.disconnect();

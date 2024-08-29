@@ -24,8 +24,9 @@ const add_relay = async (req, res, next) => {
         req.activity = `Relay ${relay_id} added`;
         next();
     } catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 };
 
@@ -37,8 +38,9 @@ const get_relay = async (req, res) => {
         res.status(200).json(relaysArray);
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 }
 
@@ -76,8 +78,9 @@ const set_relay = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 }
 
@@ -108,8 +111,9 @@ const set_status = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 }
 
@@ -129,8 +133,9 @@ const delete_relay = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 }
 
@@ -159,8 +164,9 @@ const set_relay_home = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 };
 
@@ -173,8 +179,9 @@ const get_relay_home = async (req, res) => {
         res.status(200).json(relaysArray);
     }
     catch (error) {
-        console.error('Error setting data:', error);
-        res.status(500).json({ error: 'An error occurred while setting data.' });
+        res.status(500).json({
+            error: 'Server error',
+        });
     }
 }
 

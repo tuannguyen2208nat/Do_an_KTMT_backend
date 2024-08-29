@@ -11,12 +11,12 @@ const refreshToken = async (req, res) => {
 
     JWT.verify(refreshToken, refreshTokenSecret, async (err, user) => {
         if (err) return res.status(403).json({
-            status: 403,
+            error: 'Invalid refresh token'
         });
 
         const dbUser = await modelUser.findById(user.id);
         if (!dbUser || dbUser.refreshToken !== refreshToken) return res.status(403).json({
-            status: 403,
+            error: 'Invalid refresh token',
         });
 
         const newAccessToken = JWT.sign({ id: dbUser._id }, accessTokenSecret, { expiresIn: '1h' });

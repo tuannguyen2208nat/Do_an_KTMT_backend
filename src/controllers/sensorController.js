@@ -10,19 +10,17 @@ const getTemp = async (req, res) => {
             .exec();
 
         if (latestData) {
-            res.json({
-                status: 200,
+            res.status(200).json({
                 data: latestData.data,
             });
         } else {
             return res.status(404).json({
-                message: 'No temperature data found for this user.',
+                error: 'No temperature data found for this user.',
             });
         }
     } catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error',
         });
     }
 };
@@ -35,19 +33,17 @@ const getHumi = async (req, res) => {
             .exec();
 
         if (latestData) {
-            res.json({
-                status: 200,
+            res.status(200).json({
                 data: latestData.data,
             });
         } else {
             return res.status(404).json({
-                message: 'No humidity data found for this user.',
+                error: 'No humidity data found for this user.',
             });
         }
     } catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error',
         });
     }
 };
@@ -60,20 +56,18 @@ const getLocation = async (req, res) => {
             .exec();
 
         if (location) {
-            res.json({
-                status: 200,
+            res.status(200).json({
                 X: location.X,
                 Y: location.Y,
             });
         } else {
             return res.status(404).json({
-                message: 'No location data found for this user.',
+                error: 'No location data found for this user.',
             });
         }
     } catch (error) {
         res.status(500).json({
-            message: 'Server error',
-            error: error.message,
+            error: 'Server error',
         });
     }
 }
