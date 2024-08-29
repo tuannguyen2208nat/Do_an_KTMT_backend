@@ -15,6 +15,10 @@ const connect = async (req, res) => {
     }
 
     const webServerIp = user.webServerIp;
+
+    if (!webServerIp) {
+        return res.status(404).json({ error: 'Webserver IP not found' });
+    }
     const wsUrl = "ws://" + webServerIp + "/ws";
 
     try {
