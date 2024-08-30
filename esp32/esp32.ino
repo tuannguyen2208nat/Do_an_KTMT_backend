@@ -84,34 +84,33 @@ void handleMessage(AdafruitIO_Data *data)
 {
     String message = data->value();
 
-    if (message.startsWith("!RELAY") && message.endsWith("#"))
+    DynamicJsonDocument doc(1024);
+    DeserializationError error = deserializeJson(doc, message);
+
+    if (error)
     {
-        int indexStart = message.indexOf('!') + 6;
-        int indexEnd = message.indexOf(':');
-        String indexStr = message.substring(indexStart, indexEnd);
-        int index = indexStr.toInt();
+        Serial.println("Failed to parse JSON");
+        return;
+    }
 
-        int statusStart = indexEnd + 1;
-        int statusEnd = message.indexOf('#');
-        String statusStr = message.substring(statusStart, statusEnd);
+    int index = doc["index"];
+    String state = doc["state"].as<String>();
 
-        if (statusStr == "ON" && index < (sizeof(relay_ON) / sizeof(relay_ON[0])))
+    if (index >= 1 && index <= 32)
+    {
+        if (state == "ON")
         {
             sendModbusCommand(relay_ON[index], sizeof(relay_ON[index]));
         }
-        else if (statusStr == "OFF" && index < (sizeof(relay_OFF) / sizeof(relay_OFF[0])))
+        else
         {
             sendModbusCommand(relay_OFF[index], sizeof(relay_OFF[index]));
         }
-        else
-        {
-            Serial.println("Invalid command");
-        }
-
-        String sendData = String(index) + '-' + statusStr;
-        status->save(sendData);
-        Serial.println("Data sent to Adafruit IO: " + sendData);
     }
+    String response = "{\"relay_id\":" + String(index) + ",\"state\":\"" + state + "\"}";
+    String sendData = String(index) + '-' + state;
+    Serial.println(sendData);
+    ws.textAll(response);
 }
 
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
@@ -129,6 +128,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
         String message = String((char *)data);
         DynamicJsonDocument doc(1024);
         DeserializationError error = deserializeJson(doc, message);
+
 
         if (error)
         {
