@@ -73,13 +73,13 @@ const calculateAverage = (allDates, step, result) => {
 
         result.push({
             date: middleDate,
-            value: averageValue.toFixed(2)
+            value: averageValue.toFixed(1)
         });
     }
     const lastElement = allDates[allDates.length - 1];
     result.push({
         date: lastElement.date,
-        value: parseFloat(lastElement.value).toFixed(2)
+        value: parseFloat(lastElement.value).toFixed(1)
     });
 }
 
@@ -136,7 +136,7 @@ const getTemp = async (req, res) => {
         while (currentDate <= endDate) {
             const dateString = currentDate.toISOString().split('T')[0];
             const averageTemp = groupedData[dateString]
-                ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(2)
+                ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(1)
                 : 0;
             allDates.push({
                 date: dateString,
@@ -172,7 +172,7 @@ const getHumi = async (req, res) => {
         const group = dataArray.slice(index, index + groupSize);
         const averageValue = (
             group.reduce((sum, date) => sum + parseFloat(date.value), 0) / group.length
-        ).toFixed(2);
+        ).toFixed(1);
 
         let middleDate;
         if (index + groupSize >= dataArray.length) {
@@ -237,7 +237,7 @@ const getHumi = async (req, res) => {
         while (currentDate <= endDate) {
             const dateString = currentDate.toISOString().split('T')[0];
             const averageTemp = groupedData[dateString]
-                ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(2)
+                ? (groupedData[dateString].total / groupedData[dateString].count).toFixed(1)
                 : 0;
             allDates.push({
                 date: dateString,
