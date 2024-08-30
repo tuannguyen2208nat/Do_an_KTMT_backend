@@ -58,14 +58,14 @@ void sendValue(String message)
             sendModbusCommand(relay_OFF[index], sizeof(relay_OFF[index]));
         }
     }
-    String response = "{\"relay_id\":" + String(index) + ",\"state\":\"" + state + "\"}";
+    String response = "{\"index\":" + String(index) + ",\"state\":\"" + state + "\"}";
     String sendData = String(index) + '-' + state;
-    relay->save(response);
+    Serial.println(sendData);
+    relay->save(sendData);
     if (ws.count() > 0)
     {
         ws.textAll(response);
     }
-    Serial.println(sendData);
 }
 
 void TaskTemperatureHumidity(void *pvParameters)
