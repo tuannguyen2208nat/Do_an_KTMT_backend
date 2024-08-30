@@ -93,12 +93,7 @@ const publishdata = (req, res, next) => {
     console.log('Publishing data to WebSocket');
     const { relayid, state } = req;
     try {
-        var status;
-        if (!state) {
-            status = "ON";
-        } else {
-            status = "OFF";
-        }
+        var status = state ? "ON" : "OFF";
         const jsonData = JSON.stringify({
             index: relayid,
             state: status
