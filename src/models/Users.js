@@ -28,9 +28,6 @@ const Users = new Schema({
     phone_number: {
         type: String,
     },
-    address: {
-        type: String,
-    },
     avatar: {
         data: Buffer,
         contentType: String,

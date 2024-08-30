@@ -23,7 +23,6 @@ const connect = async (req, res) => {
 
     try {
         client = new WebSocket(wsUrl);
-
         client.on('open', () => {
             console.log('Connected to WebSocket Webserver');
             res.status(200).json({ message: 'Connected to WebSocket Webserver' });
@@ -77,12 +76,12 @@ const connect = async (req, res) => {
         });
 
         client.on('error', (error) => {
-            console.error('WebSocket error:', error);
-            res.status(500).json({ error: 'WebSocket connection error' });
+            console.error('Error connecting to WebSocket', error);
+            res.status(500).json({ error: 'Error connecting to WebSocket,please go to profile for check Webserver.' });
         });
     } catch (error) {
         console.error('Error connecting to WebSocket:', error);
-        res.status(500).json({ error: 'Error connecting to WebSocket' });
+        res.status(500).json({ error: 'Error connecting to WebSocket,please go to profile for check Webserver.' });
     }
 };
 

@@ -20,6 +20,9 @@ const connect = async (req, res) => {
 
     const { AIO_KEY } = user;
     AIO_USERNAME = user.AIO_USERNAME;
+    if (!AIO_USERNAME || !AIO_KEY) {
+        return res.status(400).json({ error: 'User does not have Adafruit IO credentials' });
+    }
     const clientId = 'client' + Math.random().toString(36).substring(7);
 
     client = mqtt.connect(
@@ -39,7 +42,7 @@ const connect = async (req, res) => {
     client.on('error', (err) => {
         console.error('Connection error:', err);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to connect to MQTT' });
+            res.status(500).json({ error: 'Error connecting to MQTT,please go to profile to check AIO.' });
         }
     });
 };

@@ -153,20 +153,20 @@ const edit_profile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const { username, fullname, email, phone_number, address, AIO_USERNAME, AIO_KEY, webServerIp } = req.body;
-        if (username) user.username = username;
-        if (fullname) user.fullname = fullname;
-        if (email) user.email = email;
-        if (AIO_USERNAME) user.AIO_USERNAME = AIO_USERNAME;
-        if (AIO_KEY) user.AIO_KEY = AIO_KEY;
-        if (phone_number) user.phone_number = phone_number;
-        if (address) user.address = address;
-        if (webServerIp) user.webServerIp = webServerIp;
+        const { username, fullname, email, phone_number, AIO_USERNAME, AIO_KEY, webServerIp } = req.body;
+        user.username = username;
+        user.fullname = fullname;
+        user.email = email;
+        user.AIO_USERNAME = AIO_USERNAME;
+        user.AIO_KEY = AIO_KEY;
+        user.phone_number = phone_number;
+        user.webServerIp = webServerIp;
         if (req.file) {
-            user.avatar.data = req.file.buffer;
-            user.avatar.contentType = req.file.mimetype;
+            user.avatar = {
+                data: req.file.buffer,
+                contentType: req.file.mimetype
+            };
         }
-
         await user.save();
         const userProfile = user.toObject();
         delete userProfile.password;
@@ -174,13 +174,12 @@ const edit_profile = async (req, res) => {
             message: 'Profile updated successfully',
             data: userProfile,
         });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return res.status(500).json({ error: 'Server error' });
     }
-    catch (error) {
-        return res.status(500).json({
-            error: 'Server error',
-        });
-    }
-}
+};
+
 
 const change_password = async (req, res) => {
     try {
