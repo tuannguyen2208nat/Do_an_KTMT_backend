@@ -103,17 +103,27 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
 };
 
 const publishdata = (req, res, next) => {
-    const { feed, relayid, state } = req;
-    const data = `!RELAY${relayid}:${state ? 'ON' : 'OFF'}#`;
     if (!client) {
-        return res.status(200).json({ error: 'Not connected to MQTT' });
+        return res.status(400).json({ error: 'MQTT not connected' });
     }
+    const { feed, relayid, state } = req;
+    var status;
+    if (!state) {
+        status = "ON";
+    } else {
+        status = "OFF";
+    }
+    const jsonData = JSON.stringify({
+        index: relayid,
+        state: status
+    });
+
     const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
-    client.publish(feedPath, data, (err) => {
+    client.publish(feedPath, jsonData, (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to publish data' });
         } else {
-            console.log(`Data published to ${feedPath}: ${data}`);
+            console.log(`Data published to ${feedPath}: ${jsonData}`);
             next();
         }
     });

@@ -86,6 +86,10 @@ const connect = async (req, res) => {
 };
 
 const publishdata = (req, res, next) => {
+    if (!client) {
+        return res.status(500).json({ error: 'WebSocket not connected' });
+    }
+
     console.log('Publishing data to WebSocket');
     const { relayid, state } = req;
     try {
