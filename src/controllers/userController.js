@@ -113,6 +113,7 @@ const logout = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         user.refreshToken = '';
+        console.log('Saving user:', user);
         await user.save();
         return res.status(200).json({
             message: 'Logout successfully',
@@ -241,5 +242,6 @@ const forgot_password = async (req, res) => {
         });
     }
 }
+
 
 module.exports = { login, register, logout, get_profile, edit_profile, change_password, forgot_password };

@@ -15,7 +15,6 @@ const Users = new Schema({
         type: String,
         unique: true,
         required: true,
-        match: [/\S+@\S+\.\S+/, 'Email is not valid'],
     },
     password: {
         type: String,
@@ -29,9 +28,8 @@ const Users = new Schema({
     },
     phone_number: {
         type: String,
-        unique: true,
         required: true,
-        match: [/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'],
+        unique: true,
     },
     avatar: {
         data: Buffer,
