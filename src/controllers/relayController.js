@@ -19,6 +19,10 @@ const add_relay = async (req, res, next) => {
         if (existingRelay) {
             return res.status(400).json({ error: 'Relay with this ID already exists for this user.' });
         }
+        const relayCount = await Relay.countDocuments({ userID });
+        if (relayCount >= 2 && req.role === 'user') {
+            return res.status(400).json({ error: 'Please upgradge your account.' });
+        }
         const relay = new Relay({ userID, relay_id, relay_name, state: false, relay_home: false });
         await relay.save();
         req.activity = `Relay ${relay_id} added`;
@@ -156,7 +160,6 @@ const set_relay_home = async (req, res, next) => {
                 return res.status(400).json({ error: 'Maximum of 4 relays on HomePage' });
             }
         }
-
         relay.relay_home = relay_home;
         await relay.save();
 
@@ -169,7 +172,6 @@ const set_relay_home = async (req, res, next) => {
         });
     }
 };
-
 
 const get_relay_home = async (req, res) => {
     try {

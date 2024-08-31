@@ -15,6 +15,7 @@ const Users = new Schema({
         type: String,
         unique: true,
         required: true,
+        match: [/\S+@\S+\.\S+/, 'Email is not valid'],
     },
     password: {
         type: String,
@@ -22,11 +23,15 @@ const Users = new Schema({
     },
     role: {
         type: String,
+        required: true,
         enum: ['user', 'vip', 'admin',],
         default: 'user'
     },
     phone_number: {
         type: String,
+        unique: true,
+        required: true,
+        match: [/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'],
     },
     avatar: {
         data: Buffer,

@@ -240,7 +240,6 @@ const forgot_password = async (req, res) => {
             error: 'Server error',
         });
     }
-
 }
 
 module.exports = { login, register, logout, get_profile, edit_profile, change_password, forgot_password };

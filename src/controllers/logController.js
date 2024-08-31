@@ -24,6 +24,13 @@ const setLog = async (req, res) => {
     }
 }
 
+const getNumberOfDays = (startDate, endDate) => {
+    const timeDifference = endDate - startDate;
+    const oneDay = 24 * 60 * 60 * 1000;
+    return Math.floor(timeDifference / oneDay) + 1;
+};
+
+
 const getLog = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -38,6 +45,14 @@ const getLog = async (req, res) => {
 
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
+
+        if (startDate > endDate) {
+            return res.status(400).json({ error: 'Start date must be before end date.' });
+        }
+
+        if (getNumberOfDays(startDate, endDate) > 7 && req.role === 'user') {
+            return res.status(400).json({ error: 'Please upgradge your account.' });
+        }
 
         const logs = await modelLog.find({
             userID: userId,
@@ -76,11 +91,6 @@ const calculateAverage = (allDates, step, result) => {
             value: averageValue.toFixed(1)
         });
     }
-    const lastElement = allDates[allDates.length - 1];
-    result.push({
-        date: lastElement.date,
-        value: parseFloat(lastElement.value).toFixed(1)
-    });
 }
 
 const getTemp = async (req, res) => {
@@ -91,6 +101,10 @@ const getTemp = async (req, res) => {
 
         if (!time || !userId) {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
+        }
+
+        if (time !== 7 && req.role === 'user') {
+            return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
         const endDate = new Date();
@@ -168,31 +182,16 @@ const getTemp = async (req, res) => {
 };
 
 const getHumi = async (req, res) => {
-    const getAverageGroupedData = (dataArray, index, groupSize) => {
-        const group = dataArray.slice(index, index + groupSize);
-        const averageValue = (
-            group.reduce((sum, date) => sum + parseFloat(date.value), 0) / group.length
-        ).toFixed(1);
-
-        let middleDate;
-        if (index + groupSize >= dataArray.length) {
-            middleDate = dataArray[dataArray.length - 1].date;
-        } else {
-            middleDate = group[Math.floor(groupSize / 2)].date;
-        }
-
-        return {
-            date: middleDate,
-            value: averageValue
-        };
-    };
-
     try {
         const userId = req.user.id;
         const { time } = req.body;
 
         if (!time || !userId) {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
+        }
+
+        if (time !== 7 && req.role === 'user') {
+            return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
         const endDate = new Date();
