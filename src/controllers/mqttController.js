@@ -107,12 +107,7 @@ const publishdata = (req, res, next) => {
         return res.status(400).json({ error: 'MQTT not connected' });
     }
     const { feed, relayid, state } = req;
-    var status;
-    if (!state) {
-        status = "ON";
-    } else {
-        status = "OFF";
-    }
+    const status = state ? 'ON' : 'OFF';
     const jsonData = JSON.stringify({
         index: relayid,
         state: status

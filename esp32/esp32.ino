@@ -1,29 +1,46 @@
-#include <DHT20.h>
-#include <TinyGPS++.h>
-#include <AdafruitIO.h>
-#include <AdafruitIO_WiFi.h>
-#include <SoftwareSerial.h>
 #include <WiFi.h>
+#include <DHT20.h>
+#include "LittleFS.h"
 #include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <PubSubClient.h>
+#include <ESPAsyncWebServer.h>
 #include "config.h"
 #include "RelayStatus.h"
 
-DHT20 dht20;
-float X, Y;
-TinyGPSPlus gps;
-SoftwareSerial ss(TXD_GPS, RXD_GPS);
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
-AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
-AdafruitIO_Feed *relay = io.feed("relay");
-AdafruitIO_Feed *temp = io.feed("temperature");
-AdafruitIO_Feed *humi = io.feed("humidity");
-AdafruitIO_Feed *location = io.feed("location");
+const long utcOffsetInSeconds = 25200;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, ntpServer, utcOffsetInSeconds);
+
+DHT20 dht20;
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 AsyncWebServer server(httpPort);
 AsyncWebSocket ws("/ws");
+
+typedef struct
+{
+    int id;
+    bool state;
+    String days[MAX_DAYS];
+    String time;
+    struct
+    {
+        int relayId;
+        String action;
+    } actions[MAX_ACTIONS];
+    int actionCount;
+} Schedule;
+
+Schedule schedules[MAX_SCHEDULES];
+int scheduleCount = 0;
 
 void sendModbusCommand(const uint8_t command[], size_t length)
 {
@@ -61,62 +78,29 @@ void sendValue(String message)
     String response = "{\"index\":" + String(index) + ",\"state\":\"" + state + "\"}";
     String sendData = String(index) + '-' + state;
     Serial.println(sendData);
-    relay->save(sendData);
+    client.publish("tuannguyen2208nat/feeds/relay", sendData.c_str());
     if (ws.count() > 0)
     {
         ws.textAll(response);
     }
 }
 
-void TaskTemperatureHumidity(void *pvParameters)
+void callback(char *topic, byte *payload, unsigned int length)
 {
-    while (1)
+    String message;
+    for (unsigned int i = 0; i < length; i++)
     {
-        dht20.read();
-        float temperature = dht20.getTemperature();
-        float humidity = dht20.getHumidity();
-        temp->save(String(temperature));
-        humi->save(String(humidity));
-
-        if (ws.count() > 0)
-        {
-            String data = "{\"temperature\":" + String(temperature) + ",\"humidity\":" + String(humidity) + "}";
-            ws.textAll(data);
-        }
-        vTaskDelay(delay_temp / portTICK_PERIOD_MS);
+        message += (char)payload[i];
     }
-}
-
-void TaskGPS(void *pvParameters)
-{
-    while (1)
+    if (strcmp(topic, "tuannguyen2208nat/feeds/relay") == 0)
     {
-        if (gps.location.isValid())
-        {
-            X = gps.location.lat();
-            Y = gps.location.lng();
-            String xStr = String(X, 7);
-            String yStr = String(Y, 7);
-
-            Serial.print("X: ");
-            Serial.print(xStr);
-            Serial.print(" Y: ");
-            Serial.println(yStr);
-            Serial.println();
-            location->save(xStr + "-" + yStr);
-        }
-
-        if (millis() > 5000 && gps.charsProcessed() < 10)
-        {
-            Serial.println(F("No GPS data received: check wiring"));
-        }
-        vTaskDelay(delay_gps / portTICK_PERIOD_MS);
+        sendValue(message);
     }
-}
-
-void handleMessage(AdafruitIO_Data *data)
-{
-    sendValue(data->value());
+    else if (strcmp(topic, "tuannguyen2208nat/feeds/schedule") == 0)
+    {
+        Serial.println(message);
+        parseJson(message);
+    }
 }
 
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
@@ -135,51 +119,191 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     }
 }
 
+void TaskTemperatureHumidity(void *pvParameters)
+{
+    while (1)
+    {
+        dht20.read();
+        float temperature = dht20.getTemperature();
+        float humidity = dht20.getHumidity();
+        String temperatureStr = String(temperature, 2);
+        String humidityStr = String(humidity, 2);
+        client.publish("tuannguyen2208nat/feeds/temperature", temperatureStr.c_str());
+        client.publish("tuannguyen2208nat/feeds/humidity", humidityStr.c_str());
+        if (ws.count() > 0)
+        {
+            String data = "{\"temperature\":" + temperatureStr + ",\"humidity\":" + humidityStr + "}";
+            ws.textAll(data);
+        }
+        vTaskDelay(delay_temp / portTICK_PERIOD_MS);
+    }
+}
+
+void connectMQTT()
+{
+    while (!client.connected())
+    {
+        Serial.print("Connecting to MQTT...");
+        String clientId = "ESP32Client" + String(random(0, 1000));
+        if (client.connect(clientId.c_str(), IO_USERNAME, IO_KEY))
+        {
+            Serial.println("connected");
+            client.subscribe("tuannguyen2208nat/feeds/relay");
+            client.subscribe("tuannguyen2208nat/feeds/schedule");
+            Serial.println(WiFi.localIP());
+            Serial.println("Start");
+        }
+        else
+        {
+            Serial.print("failed, rc=");
+            Serial.print(client.state());
+            Serial.println(" try again in 5 seconds");
+            delay(5000);
+        }
+    }
+}
+
+String getDayOfWeek(unsigned long epochTime)
+{
+    time_t rawTime = epochTime;
+    struct tm *timeInfo = localtime(&rawTime);
+    String days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    return days[timeInfo->tm_wday];
+}
+
+void checkSchedules()
+{
+    timeClient.update();
+    unsigned long epochTime = timeClient.getEpochTime();
+    String currentDay = getDayOfWeek(epochTime);
+    String currentTime = timeClient.getFormattedTime().substring(0, 5);
+    Serial.println(currentDay + "-" + currentTime);
+    for (int i = 0; i < scheduleCount; i++)
+    {
+        bool dayMatch = false;
+        for (int d = 0; d < MAX_DAYS; d++)
+        {
+            if (schedules[i].days[d] == currentDay)
+            {
+                dayMatch = true;
+                break;
+            }
+        }
+        if (dayMatch && schedules[i].time == currentTime && schedules[i].state)
+        {
+            for (int a = 0; a < schedules[i].actionCount; a++)
+            {
+                if (schedules[i].actions[a].action == "ON")
+                {
+                    digitalWrite(schedules[i].actions[a].relayId, HIGH);
+                }
+                else if (schedules[i].actions[a].action == "OFF")
+                {
+                    digitalWrite(schedules[i].actions[a].relayId, LOW);
+                }
+
+                Serial.print("Relay ");
+                Serial.print(schedules[i].actions[a].relayId);
+                Serial.print(" has been ");
+                Serial.println(schedules[i].actions[a].action);
+            }
+            for (int j = i; j < scheduleCount - 1; j++)
+            {
+                schedules[j] = schedules[j + 1];
+            }
+            scheduleCount--;
+            i--;
+        }
+    }
+}
+
+void TaskSchedules(void *pvParameters)
+{
+    while (true)
+    {
+        checkSchedules();
+        vTaskDelay(pdMS_TO_TICKS(60000));
+    }
+}
+
+void parseJson(const String &message)
+{
+
+    DynamicJsonDocument doc(1024);
+    DeserializationError error = deserializeJson(doc, message);
+    if (error)
+    {
+        Serial.print(F("deserializeJson() thất bại: "));
+        Serial.println(error.f_str());
+        return;
+    }
+    int id = doc["id"];
+    bool state = doc["state"];
+    String time = doc["time"];
+    JsonArray days = doc["days"];
+    JsonArray actions = doc["actions"];
+
+    bool found = false;
+    for (int i = 0; i < scheduleCount; i++)
+    {
+        if (schedules[i].id == id)
+        {
+
+            schedules[i].state = state;
+            schedules[i].time = time;
+            for (size_t j = 0; j < days.size(); j++)
+            {
+                schedules[i].days[j] = days[j].as<String>();
+            }
+            schedules[i].actionCount = actions.size();
+            for (size_t j = 0; j < actions.size(); j++)
+            {
+                schedules[i].actions[j].relayId = actions[j]["relayId"];
+                schedules[i].actions[j].action = actions[j]["action"].as<String>();
+            }
+            found = true;
+            break;
+        }
+    }
+
+    if (!found && scheduleCount < MAX_SCHEDULES)
+    {
+        schedules[scheduleCount].id = id;
+        schedules[scheduleCount].state = state;
+        schedules[scheduleCount].time = time;
+        for (size_t j = 0; j < days.size(); j++)
+        {
+            schedules[scheduleCount].days[j] = days[j].as<String>();
+        }
+        schedules[scheduleCount].actionCount = actions.size();
+        for (size_t j = 0; j < actions.size(); j++)
+        {
+            schedules[scheduleCount].actions[j].relayId = actions[j]["relayId"];
+            schedules[scheduleCount].actions[j].action = actions[j]["action"].as<String>();
+        }
+        scheduleCount++;
+    }
+}
+
 void setup()
 {
+    Serial.begin(115200);
+    Serial2.begin(BAUD_RATE_2, SERIAL_8N1, TXD_RELAY, RXD_RELAY);
+    dht20.begin();
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    Serial.print("Connecting to ");
+    Serial.println(WIFI_SSID);
+
     if (!LittleFS.begin())
     {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
 
-    Serial.begin(115200);
-    Serial2.begin(BAUD_RATE_2, SERIAL_8N1, TXD_RELAY, RXD_RELAY);
-    ss.begin(BAUD_RATE_2);
-    dht20.begin();
-
-    sendModbusCommand(relay_OFF[0], sizeof(relay_OFF[0]));
-
-    while (!Serial)
-        ;
-
-    io.connect();
-    relay->onMessage(handleMessage);
-
-    while (io.status() < AIO_CONNECTED)
-    {
-        Serial.println("Connecting to Adafruit IO");
-        delay(500);
-    }
-
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(1000);
-        Serial.println("Connecting to WiFi...");
-    }
-
-    Serial.println("Connected to WiFi");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 4096, NULL, 2, NULL);
-    xTaskCreate(TaskGPS, "TaskGPS", 4096, NULL, 2, NULL);
-    relay->get();
+    Serial.println("Connected to Wi-Fi");
 
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/index.html", "text/html"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -187,15 +311,22 @@ void setup()
     server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/styles.css", "text/css"); });
     server.begin();
-    Serial.println("Start");
+
+    timeClient.begin();
+    timeClient.update();
+
+    client.setServer(MQTT_SERVER, MQTT_PORT);
+    client.setCallback(callback);
+    connectMQTT();
+    xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 4096, NULL, 1, NULL);
+    xTaskCreate(TaskSchedules, "Schedule Task", 4096, NULL, 1, NULL);
 }
 
 void loop()
 {
-    io.run();
-    ws.cleanupClients();
-    while (ss.available())
+    if (!client.connected())
     {
-        gps.encode(ss.read());
+        connectMQTT();
     }
+    client.loop();
 }
