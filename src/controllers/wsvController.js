@@ -31,7 +31,6 @@ const connect = async (req, res) => {
         client.on('message', (message) => {
             if (Buffer.isBuffer(message)) {
                 message = message.toString();
-                console.log('Data received from WebSocket:', message);
             }
             try {
                 const data = JSON.parse(message);
@@ -93,6 +92,7 @@ const publishdata = (req, res, next) => {
     try {
         var status = state ? "ON" : "OFF";
         const jsonData = JSON.stringify({
+            mode: "Manual",
             index: relayid,
             state: status
         });

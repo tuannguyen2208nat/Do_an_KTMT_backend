@@ -109,6 +109,7 @@ const publishdata = (req, res, next) => {
     const { feed, relayid, state } = req;
     const status = state ? 'ON' : 'OFF';
     const jsonData = JSON.stringify({
+        mode: "Manual",
         index: relayid,
         state: status
     });
