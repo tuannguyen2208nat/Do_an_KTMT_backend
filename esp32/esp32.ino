@@ -8,8 +8,6 @@
 #include "config.h"
 #include "RelayStatus.h"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
@@ -24,6 +22,8 @@ PubSubClient client(espClient);
 
 AsyncWebServer server(httpPort);
 AsyncWebSocket ws("/ws");
+
+int relayPins[4] = {1, 2, 3, 4};
 
 typedef struct
 {
@@ -180,6 +180,10 @@ void checkSchedules()
     Serial.println(currentDay + "-" + currentTime);
     for (int i = 0; i < scheduleCount; i++)
     {
+        if (!schedules[i].state)
+        {
+            continue;
+        }
         bool dayMatch = false;
         for (int d = 0; d < MAX_DAYS; d++)
         {
@@ -189,7 +193,7 @@ void checkSchedules()
                 break;
             }
         }
-        if (dayMatch && schedules[i].time == currentTime && schedules[i].state)
+        if (dayMatch && (schedules[i].time == currentTime))
         {
             for (int a = 0; a < schedules[i].actionCount; a++)
             {
@@ -201,11 +205,9 @@ void checkSchedules()
                 {
                     digitalWrite(schedules[i].actions[a].relayId, LOW);
                 }
-
-                Serial.print("Relay ");
-                Serial.print(schedules[i].actions[a].relayId);
-                Serial.print(" has been ");
-                Serial.println(schedules[i].actions[a].action);
+                String sendData = String(schedules[i].actions[a].relayId) + "-" + String(schedules[i].actions[a].action);
+                Serial.println(sendData);
+                client.publish("tuannguyen2208nat/feeds/relay", sendData.c_str());
             }
             for (int j = i; j < scheduleCount - 1; j++)
             {
@@ -238,7 +240,16 @@ void parseJson(const String &message)
         return;
     }
     int id = doc["id"];
-    bool state = doc["state"];
+    const char *state_str = doc["state"];
+    bool state = false;
+    if (strcmp(state_str, "true") == 0)
+    {
+        state = true;
+    }
+    else if (strcmp(state_str, "false") == 0)
+    {
+        state = false;
+    }
     String time = doc["time"];
     JsonArray days = doc["days"];
     JsonArray actions = doc["actions"];
@@ -298,6 +309,11 @@ void setup()
     {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        pinMode(relayPins[i], OUTPUT);
     }
 
     Serial.println("Connected to Wi-Fi");
