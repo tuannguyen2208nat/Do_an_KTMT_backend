@@ -161,11 +161,19 @@ const edit_profile = async (req, res) => {
         user.AIO_KEY = AIO_KEY;
         user.phone_number = phone_number;
         user.webServerIp = webServerIp;
-        if (req.file) {
-            user.avatar = {
-                data: req.file.buffer,
-                contentType: req.file.mimetype
-            };
+        if (req.files) {
+            if (req.files['avatar']) {
+                user.avatar = {
+                    data: req.files['avatar'][0].buffer,
+                    contentType: req.files['avatar'][0].mimetype
+                };
+            }
+            if (req.files['coverPhoto']) {
+                user.coverPhoto = {
+                    data: req.files['coverPhoto'][0].buffer,
+                    contentType: req.files['coverPhoto'][0].mimetype
+                };
+            }
         }
         await user.save();
         const userProfile = user.toObject();

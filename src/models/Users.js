@@ -35,6 +35,10 @@ const Users = new Schema({
         data: Buffer,
         contentType: String,
     },
+    coverPhoto: {
+        data: Buffer,
+        contentType: String,
+    },
     AIO_USERNAME: {
         type: String,
         required: true,
