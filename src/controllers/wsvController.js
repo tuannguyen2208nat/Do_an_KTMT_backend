@@ -77,11 +77,11 @@ const connect = async (req, res) => {
 
         client.on('error', (error) => {
             console.error('Error connecting to WebSocket', error);
-            res.status(500).json({ error: 'Error connecting to WebSocket,please go to profile for check Webserver.' });
+            res.status(500).json({ error: 'Error connecting to WebSocket , please go to profile for checking WebserverIP.' });
         });
     } catch (error) {
         console.error('Error connecting to WebSocket:', error);
-        res.status(500).json({ error: 'Error connecting to WebSocket,please go to profile for check Webserver.' });
+        res.status(500).json({ error: 'Error connecting to WebSocket , please go to profile for checking WebserverIP.' });
     }
 };
 
