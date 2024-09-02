@@ -401,26 +401,22 @@ void sendSchedules()
 {
     DynamicJsonDocument doc(2048);
     JsonArray scheduleArray = doc.createNestedArray("schedule");
-    bool hasSchedules = false;
-    for (int i = 0; i < MAX_SCHEDULES; i++)
+    for (int i = 0; i < scheduleCount; i++)
     {
-        if (schedules[i].id == 0)
-        {
-            continue;
-        }
-        hasSchedules = true;
         String scheduleJson = scheduleToJson(schedules[i]);
         DynamicJsonDocument scheduleDoc(1024);
         deserializeJson(scheduleDoc, scheduleJson);
         scheduleArray.add(scheduleDoc.as<JsonObject>());
     }
     String result;
-    serializeJson(doc, result);
-    if (!hasSchedules)
+    if (scheduleCount <= 0)
     {
         result = "[]";
     }
-
+    else
+    {
+        serializeJson(doc, result);
+    }
     ws.textAll(result);
 }
 
@@ -435,6 +431,7 @@ void loadSchedulesFromFile()
 
     file.read((uint8_t *)schedules, sizeof(schedules));
     file.read((uint8_t *)&scheduleCount, sizeof(scheduleCount));
+
     file.close();
 }
 
@@ -449,6 +446,7 @@ void saveSchedulesToFile()
 
     file.write((uint8_t *)schedules, sizeof(schedules));
     file.write((uint8_t *)&scheduleCount, sizeof(scheduleCount));
+
     file.close();
 }
 

@@ -119,7 +119,6 @@ const publishdata = (req, res, next) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to publish data' });
         } else {
-            console.log(`Data published to ${feedPath}: ${jsonData}`);
             next();
         }
     });

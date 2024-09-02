@@ -30,7 +30,6 @@ const getNumberOfDays = (startDate, endDate) => {
     return Math.floor(timeDifference / oneDay) + 1;
 };
 
-
 const getLog = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -162,6 +161,7 @@ const getTemp = async (req, res) => {
         let result = [];
         if (time === 7) {
             result = allDates.map(date => ({ ...date }));
+            result.pop();
         }
         else if (time === 30) {
             calculateAverage(allDates, 3, result);
@@ -248,6 +248,7 @@ const getHumi = async (req, res) => {
         let result = [];
         if (time === 7) {
             result = allDates.map(date => ({ ...date }));
+            result.pop();
         }
         else if (time === 30) {
             calculateAverage(allDates, 3, result);
