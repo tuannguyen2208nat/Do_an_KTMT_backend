@@ -139,7 +139,9 @@ void connectMQTT()
             Serial.println("connected");
             client.subscribe("tuannguyen2208nat/feeds/relay");
             client.subscribe("tuannguyen2208nat/feeds/schedule");
-            Serial.println(WiFi.localIP());
+            String sendData = WiFi.localIP().toString();
+            client.publish("tuannguyen2208nat/feeds/ip", sendData.c_str());
+            Serial.println(sendData);
             Serial.println("Start");
         }
         else
@@ -224,6 +226,7 @@ void deleteScheduleById(int id)
                 schedules[j] = schedules[j + 1];
             }
             scheduleCount--;
+            saveSchedulesToFile();
             break;
         }
     }
@@ -363,6 +366,7 @@ void parseJson(String message)
             }
             scheduleCount++;
         }
+        saveSchedulesToFile();
     }
 }
 
@@ -420,6 +424,40 @@ void sendSchedules()
     ws.textAll(result);
 }
 
+void loadSchedulesFromFile()
+{
+    File file = LittleFS.open("/schedules.dat", "r");
+    if (!file)
+    {
+        Serial.println("Failed to open file for reading");
+        return;
+    }
+
+    file.read((uint8_t *)schedules, sizeof(schedules));
+    file.read((uint8_t *)&scheduleCount, sizeof(scheduleCount));
+    file.close();
+}
+
+void saveSchedulesToFile()
+{
+    File file = LittleFS.open("/schedules.dat", "w");
+    if (!file)
+    {
+        Serial.println("Failed to open file for writing");
+        return;
+    }
+
+    file.write((uint8_t *)schedules, sizeof(schedules));
+    file.write((uint8_t *)&scheduleCount, sizeof(scheduleCount));
+    file.close();
+}
+
+void taskLoadSchedules(void *pvParameters)
+{
+    loadSchedulesFromFile();
+    vTaskDelete(NULL);
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -460,6 +498,7 @@ void setup()
     connectMQTT();
     xTaskCreate(TaskTemperatureHumidity, "TaskTemperatureHumidity", 4096, NULL, 1, NULL);
     xTaskCreate(TaskSchedules, "Schedule Task", 4096, NULL, 1, NULL);
+    xTaskCreatePinnedToCore(taskLoadSchedules, "Load Schedules", 4096, NULL, 1, NULL, 1);
 }
 
 void loop()
