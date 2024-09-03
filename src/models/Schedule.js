@@ -11,7 +11,7 @@ const ScheduleSchema = new Schema({
     schedule_id: { type: Number, required: true },
     schedule_name: { type: String },
     state: { type: Boolean, required: true },
-    days: { type: [String], required: true },
+    day: { type: [String], required: true },
     time: { type: String, required: true },
     actions: { type: [ActionSchema], required: true },
 });

@@ -88,11 +88,11 @@ const publishdata = (req, res, next) => {
     if (!client) {
         return res.status(500).json({ error: 'WebSocket not connected' });
     }
-    const { relayid, state } = req;
+    const { relayid, state, mode } = req;
     try {
         var status = state ? "ON" : "OFF";
         const jsonData = JSON.stringify({
-            mode: "Manual",
+            mode: mode,
             index: relayid,
             state: status
         });

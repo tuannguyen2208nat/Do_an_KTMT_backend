@@ -107,6 +107,7 @@ const set_status = async (req, res, next) => {
         }
         relay.state = state;
         await relay.save();
+        req.mode = 'Manual';
         req.relayid = relay_id;
         req.state = state;
         req.feed = 'relay';
