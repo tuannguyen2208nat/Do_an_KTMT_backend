@@ -107,9 +107,9 @@ const publishdata = (req, res, next) => {
         return res.status(400).json({ error: 'MQTT not connected' });
     }
     const { feed, relayid, scheduleid, state, mode, day, time, actions } = req;
-    const status = state ? 'ON' : 'OFF';
     let jsonData;
     if (mode === 'Schedule') {
+        const status = state ? 'true' : 'false';
         jsonData = JSON.stringify({
             mode: mode,
             id: scheduleid,
@@ -120,6 +120,7 @@ const publishdata = (req, res, next) => {
         });
     }
     else if (mode === 'Manual') {
+        const status = state ? 'ON' : 'OFF';
         jsonData = JSON.stringify({
             mode: mode,
             index: relayid,

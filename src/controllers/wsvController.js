@@ -88,14 +88,28 @@ const publishdata = (req, res, next) => {
     if (!client) {
         return res.status(500).json({ error: 'WebSocket not connected' });
     }
-    const { relayid, state, mode } = req;
+    const { relayid, scheduleid, state, mode, day, time, actions } = req;
     try {
-        var status = state ? "ON" : "OFF";
-        const jsonData = JSON.stringify({
-            mode: mode,
-            index: relayid,
-            state: status
-        });
+        let jsonData;
+        if (mode === 'Schedule') {
+            const status = state ? 'true' : 'false';
+            jsonData = JSON.stringify({
+                mode: mode,
+                id: scheduleid,
+                state: status,
+                days: day,
+                time: time,
+                actions: actions
+            });
+        }
+        else if (mode === 'Manual') {
+            const status = state ? 'ON' : 'OFF';
+            jsonData = JSON.stringify({
+                mode: mode,
+                index: relayid,
+                state: status
+            });
+        }
         client.send(jsonData);
         next();
     } catch (error) {
