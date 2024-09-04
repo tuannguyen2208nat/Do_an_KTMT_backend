@@ -15,7 +15,13 @@ const setLog = async (req, res) => {
             Date: new Date()
         });
         await newLog.save();
-        res.status(200).json({ message: 'Log added successfully.' });
+        let id = req.scheduleId;
+        if (id) {
+            res.status(200).json({ message: 'Log added successfully.', id: id });
+        }
+        else {
+            res.status(200).json({ message: 'Log added successfully.' });
+        }
     }
     catch (error) {
         res.status(500).json({

@@ -38,6 +38,7 @@ const add_schedule = async (req, res, next) => {
         const schedule = new Schedule({ userID, schedule_id, schedule_name, state: false, day, time, actions });
         await schedule.save();
         req.activity = `Schedule ${schedule_name} added`;
+        req.scheduleId = schedule_id;
         next();
     } catch (error) {
         res.status(500).json({
