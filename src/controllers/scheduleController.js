@@ -82,20 +82,20 @@ const set_schedule = async (req, res, next) => {
 
         let result = '';
         if (new_schedule_name) {
-            const existingSchedule = await Schedule.findOne({ schedule_name: new_schedule_name, userID: userID });
-            if (existingSchedule) {
-                return res.status(400).json({ error: 'New schedule name already exists.' });
+            if (schedule.schedule_name !== new_schedule_name) {
+                schedule.schedule_name = new_schedule_name;
+                result += `Schedule name updated to ${new_schedule_name}. `;
             }
-            schedule.schedule_name = new_schedule_name;
-            result += `Schedule name changed to ${new_schedule_name}. `;
         }
         if (new_day) {
             schedule.day = new_day;
             result += `day updated to ${new_day.join(', ')}. `;
         }
         if (new_time) {
-            schedule.time = new_time;
-            result += `Time updated to ${new_time}. `;
+            if (schedule.time !== new_time) {
+                schedule.time = new_time;
+                result += `Time updated to ${new_time}. `;
+            }
         }
         if (new_actions) {
             schedule.actions = new_actions;
