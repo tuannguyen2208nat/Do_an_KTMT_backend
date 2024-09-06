@@ -6,6 +6,8 @@ const refreshToken = require('../middlewares/refreshToken');
 const authenticateToken = require('../middlewares/authenticateToken');
 const emailorusername = require('../middlewares/emailorusername');
 
+
+
 UserRouter.post('/login', emailorusername, Usercontroller.login);
 
 UserRouter.post('/register', Usercontroller.register);
@@ -15,6 +17,10 @@ UserRouter.patch('/forgot-password', emailorusername, Usercontroller.forgot_pass
 UserRouter.get('/logout', authenticateToken, Usercontroller.logout);
 
 UserRouter.use('/profile', authenticateToken, profileRoutes);
+
+UserRouter.get('/verify-token', authenticateToken, (req, res) => {
+    res.status(200).json({ message: 'Token is valid', user: req.user });
+});
 
 UserRouter.post('/refresh-token', refreshToken);
 
