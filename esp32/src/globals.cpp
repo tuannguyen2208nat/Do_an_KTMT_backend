@@ -16,13 +16,41 @@ void sendValue(int index, String state)
     if (index >= 1 && index <= 32)
     {
         int relay_id = index - 1;
+
+        int pin;
+        switch (relay_id)
+        {
+        case 0:
+            pin = GPIO_PIN_CH1;
+            break;
+        case 1:
+            pin = GPIO_PIN_CH2;
+            break;
+        case 2:
+            pin = GPIO_PIN_CH3;
+            break;
+        case 3:
+            pin = GPIO_PIN_CH4;
+            break;
+        case 4:
+            pin = GPIO_PIN_CH5;
+            break;
+        case 5:
+            pin = GPIO_PIN_CH6;
+            break;
+        default:
+            return;
+        }
+        pinMode(pin, OUTPUT);
+
+        // Control the relay based on the state
         if (state == "ON")
         {
-            sendModbusCommand(relay_ON[relay_id], sizeof(relay_ON[relay_id]));
+            digitalWrite(pin, HIGH); // Turn relay ON
         }
         else
         {
-            sendModbusCommand(relay_OFF[relay_id], sizeof(relay_OFF[relay_id]));
+            digitalWrite(pin, LOW); // Turn relay OFF
         }
     }
     String response = "{\"index\":" + String(index) + ",\"state\":\"" + state + "\"}";
