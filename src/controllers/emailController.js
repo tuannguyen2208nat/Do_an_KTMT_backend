@@ -48,8 +48,6 @@ const confirm_code = async (req, res) => {
     try {
         const { email } = req;
         const { verificationCode } = req.body;
-        console.log(`Verification Code: ${verificationCode}`);
-        console.log(`Email: ${email}`);
 
         if (!email || !verificationCode) {
             return res.status(400).json({
