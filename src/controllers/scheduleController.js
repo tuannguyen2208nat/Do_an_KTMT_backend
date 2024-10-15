@@ -1,6 +1,4 @@
 const Schedule = require('../models/Schedule');
-const mqttController = require('../controllers/mqttController');
-const wsvController = require('../controllers/wsvController');
 
 const generateUniqueScheduleId = async (userID) => {
     let scheduleId;
@@ -139,7 +137,6 @@ const set_status = async (req, res, next) => {
         req.actions = schedule.actions;
         req.feed = 'schedule';
         req.activity = `Schedule ${schedule.schedule_name} state changed to ${schedule.state ? 'on' : 'off'}`;
-        req.controller = connect === 'MQTT' ? mqttController : wsvController;
         next();
     }
     catch (error) {

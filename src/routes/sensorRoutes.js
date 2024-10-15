@@ -1,9 +1,33 @@
-var express = require('express');
-var SensorRoutes = express.Router();
-const Sensorcontroller = require('../controllers/sensorController');
+const express = require('express');
+const SensorRoutes = express.Router();
+const SensorController = require('../controllers/sensorController');
 
-SensorRoutes.get('/temp', Sensorcontroller.getTemp);
-SensorRoutes.get('/humi', Sensorcontroller.getHumi);
-SensorRoutes.get('/location', Sensorcontroller.getLocation);
+SensorRoutes.route('/set/:type')
+    .post((req, res) => {
+        const { type } = req.params;
+        if (type === 'temp') {
+            SensorController.setTemp(req, res);
+        } else if (type === 'humi') {
+            SensorController.setHumi(req, res);
+        } else if (type === 'location') {
+            SensorController.setLocation(req, res);
+        } else {
+            res.status(400).send('Invalid type');
+        }
+    });
+
+SensorRoutes.route('/get/:type')
+    .get((req, res) => {
+        const { type } = req.params;
+        if (type === 'temp') {
+            SensorController.getTemp(req, res);
+        } else if (type === 'humi') {
+            SensorController.getHumi(req, res);
+        } else if (type === 'location') {
+            SensorController.getLocation(req, res);
+        } else {
+            res.status(400).send('Invalid type');
+        }
+    });
 
 module.exports = SensorRoutes;

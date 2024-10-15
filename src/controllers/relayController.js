@@ -1,6 +1,4 @@
 const Relay = require('../models/Relay');
-const mqttController = require('../controllers/mqttController');
-const wsvController = require('../controllers/wsvController');
 
 const add_relay = async (req, res, next) => {
     try {
