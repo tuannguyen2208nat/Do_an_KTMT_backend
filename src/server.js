@@ -1,7 +1,7 @@
 require('dotenv').config();
 var express = require('express');
 var cors = require('cors');
-var bullBoardRouter = require('./queue/bullBoard')
+var adminQueueRouter = require('./queue/bullBoard')
 
 const database = require('./config/Database');
 const routes = require('./routes/Routes');
@@ -15,9 +15,8 @@ app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/admin/queues', bullBoardRouter);
+app.use('/admin/queues', adminQueueRouter);
 app.use('/', routes);
-
 
 database.connect();
 

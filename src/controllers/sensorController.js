@@ -1,17 +1,14 @@
 const HumiditySensors = require('../models/HumiditySensors');
 const TemperatureSensors = require('../models/TemperatureSensors');
 const Location = require('../models/Location');
+const sensorQueue = require('../queue/sensorQueue');
 
 const setTemp = async (req, res) => {
     try {
         const userID = req.user.id;
         const data = req;
-        const tempData = new TemperatureSensors({
-            userID: userID,
-            data: data,
-            Date: req.time || new Date(),
-        });
-        await tempData.save();
+        const date = req.time || new Date();
+        sensorQueue.add({ userID, sensor: 'temperature', data, date });
         console.log('Temperature data saved to MongoDB');
     } catch (error) {
         res.status(500).json({
@@ -24,13 +21,9 @@ const setHumi = async (req, res) => {
     try {
         const userID = req.user.id;
         const data = req;
-        const humidityData = new HumiditySensors({
-            userID: userID,
-            data: data,
-            Date: req.time || new Date(),
-        });
-        await humidityData.save();
-        console.log('Humidity data saved to MongoDB');
+        const date = req.time || new Date();
+        sensorQueue.add({ userID, sensor: 'humidity', data, date });
+        console.log('Humidyty data saved to MongoDB');
     } catch (error) {
         res.status(500).json({
             error: 'Server error',
@@ -42,14 +35,8 @@ const setLocation = async (req, res) => {
     try {
         const userID = req.user.id;
         const data = req;
-        const [X, Y] = data.split('-');
-        const locationData = new Location({
-            userID: userID,
-            X: X,
-            Y: Y,
-            Date: req.time || new Date(),
-        });
-        await locationData.save();
+        const date = req.time || new Date();
+        sensorQueue.add({ userID, sensor: 'location', data, date });
         console.log('Location data saved to MongoDB');
     } catch (error) {
         res.status(500).json({

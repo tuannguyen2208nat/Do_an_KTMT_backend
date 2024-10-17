@@ -2,7 +2,7 @@ require('dotenv').config();
 const crypto = require('crypto');
 const Transporter = require('../config/email');
 const modelUser = require('../models/Users');
-const emailQueue = require('../queue/emailqueue');
+const emailQueue = require('../queue/emailQueue');
 
 const verificationCodes = {};
 

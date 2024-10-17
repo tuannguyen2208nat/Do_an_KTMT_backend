@@ -20,7 +20,6 @@ emailQueue.process(async (job, done) => {
 
     try {
         await Transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${email}`);
         done();
     } catch (error) {
         console.error('Error sending email:', error);

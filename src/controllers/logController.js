@@ -1,27 +1,17 @@
 const HumiditySensors = require('../models/HumiditySensors');
 const TemperatureSensors = require('../models/TemperatureSensors');
 const modelLog = require('../models/Log');
+const logQueue = require('../queue/logQueue');
 
 const setLog = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const { activity } = req;
+        const userID = req.user.id;
+        const { activity } = req.body;
         if (!activity) {
             return res.status(400).json({ error: 'Activity is required.' });
         }
-        const newLog = new modelLog({
-            userID: userId,
-            activity,
-            Date: new Date()
-        });
-        await newLog.save();
-        let id = req.scheduleId;
-        if (id) {
-            res.status(200).json({ message: 'Log added successfully.', id: id });
-        }
-        else {
-            res.status(200).json({ message: 'Log added successfully.' });
-        }
+        logQueue.add({ userID, activity });
+        res.status(200);
     }
     catch (error) {
         res.status(500).json({
