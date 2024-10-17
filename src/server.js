@@ -2,6 +2,7 @@ require('dotenv').config();
 var express = require('express');
 var cors = require('cors');
 var adminQueueRouter = require('./queue/bullBoard')
+var mqttController = require('./connect/mqttController')
 
 const database = require('./config/Database');
 const routes = require('./routes/Routes');
@@ -20,8 +21,12 @@ app.use('/', routes);
 
 database.connect();
 
+mqttController.connectAllUsers();
+
 app.listen(port, hostname, () => {
     console.log(`Listening on port ${port}`);
 });
+
+
 
 module.exports = app;

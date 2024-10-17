@@ -24,11 +24,13 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
     serverAdapter: serverAdapter,
 });
 
-const router = serverAdapter.getRouter();
-const adminQueueRouter = express.Router();
+module.exports = serverAdapter.getRouter();
 
-adminQueueRouter.use(authenticateToken);
-adminQueueRouter.use(checkAdmin);
-adminQueueRouter.use(router);
+// const router = serverAdapter.getRouter();
+// const adminQueueRouter = express.Router();
 
-module.exports = adminQueueRouter;
+// adminQueueRouter.use(authenticateToken);
+// adminQueueRouter.use(checkAdmin);
+// adminQueueRouter.use(router);
+
+// module.exports = adminQueueRouter;

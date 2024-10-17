@@ -41,10 +41,12 @@ const Users = new Schema({
     },
     AIO_USERNAME: {
         type: String,
+        unique: true,
         required: true,
     },
     AIO_KEY: {
         type: String,
+        unique: true,
         required: true,
     },
     webServerIp: {
