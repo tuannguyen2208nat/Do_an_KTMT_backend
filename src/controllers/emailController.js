@@ -2,6 +2,7 @@ require('dotenv').config();
 const crypto = require('crypto');
 const Transporter = require('../config/email');
 const modelUser = require('../models/Users');
+const emailQueue = require('../queue/emailqueue');
 
 const verificationCodes = {};
 
@@ -9,30 +10,22 @@ const generateVerificationCode = () => {
     return crypto.randomBytes(3).toString('hex');
 };
 
-const sendVerificationCode = async (email, subject, text) => {
-    const mailOptions = {
-        from: process.env.EMAIL,
-        to: email,
-        subject: subject,
-        text: text,
-    };
-    await Transporter.sendMail(mailOptions);
-}
-
-
 const send_code = async (req, res) => {
     try {
-        const { email } = req;
+        const { email } = req.body;
         if (!email) {
             return res.status(400).json({
                 error: 'Email is required.',
             });
         }
         const code = generateVerificationCode();
-        verificationCodes[email] = code;
+        verificationCodes[email] = {
+            code: code,
+            expiry: Date.now() + 300000
+        };
         const subject = 'Verification code';
         const text = `Your verification code is ${code}`;
-        await sendVerificationCode(email, subject, text);
+        emailQueue.add({ email, subject, text });
         res.status(200).json({
             message: 'Verification code sent successfully',
         });
@@ -46,8 +39,7 @@ const send_code = async (req, res) => {
 
 const confirm_code = async (req, res) => {
     try {
-        const { email } = req;
-        const { verificationCode } = req.body;
+        const { email, verificationCode } = req.body;
 
         if (!email || !verificationCode) {
             return res.status(400).json({
@@ -55,7 +47,13 @@ const confirm_code = async (req, res) => {
             });
         }
         const storedCode = verificationCodes[email];
-        if (storedCode === verificationCode) {
+        if (storedCode && storedCode.code === verificationCode) {
+            if (Date.now() > storedCode.expiry) {
+                delete verificationCodes[email];
+                return res.status(400).json({
+                    error: 'Verification code has expired.',
+                });
+            }
             delete verificationCodes[email];
             return res.status(200).json({
                 message: 'Verification successful.',
