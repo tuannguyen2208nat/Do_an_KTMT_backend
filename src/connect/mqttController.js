@@ -2,6 +2,8 @@ const mqtt = require('mqtt');
 require('dotenv').config();
 const modelUser = require('../models/Users');
 const sensorQueue = require('../queue/sensorQueue');
+const relayQueue = require('../queue/relayQueue');
+
 
 const AIO_PORT = process.env.AIO_PORT;
 
@@ -18,6 +20,9 @@ const saveData = async (email, type, data, date) => {
         sensorQueue.add({ userID: user.id, sensor: 'humidity', data, date });
     } else if (type === 'location') {
         sensorQueue.add({ userID: user.id, sensor: 'location', data, date });
+    }
+    else if (type === 'relay') {
+        relayQueue.add({ userID: user.id, data, date });
     }
 };
 
@@ -69,21 +74,27 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
     const humFeed = `${AIO_USERNAME}/feeds/humidity`;
     const locationFeed = `${AIO_USERNAME}/feeds/location`;
     const historyFeed = `${AIO_USERNAME}/feeds/history`;
+    const relayFeed = `${AIO_USERNAME}/feeds/relay-status`;
 
-    [tempFeed, humFeed, locationFeed, historyFeed].forEach((feed) => {
-        client.subscribe(feed, (err) => {
-            if (err) {
-                console.error('Subscription error:', err);
-            } else {
-                console.log(`Subscribed to feed: ${feed}`);
-            }
+    [tempFeed,
+        humFeed,
+        historyFeed,
+        // locationFeed,
+        relayFeed].forEach((feed) => {
+            client.subscribe(feed, (err) => {
+                if (err) {
+                    console.error('Subscription error:', err);
+                } else {
+                    console.log(`Subscribed to feed: ${feed}`);
+                }
+            });
         });
-    });
 
     client.on('message', async (topic, message) => {
         const feed = topic;
         try {
             const jsonData = JSON.parse(message.toString());
+            console.log(jsonData);
             const { email, data } = jsonData;
             if (!email || data === undefined) {
                 console.warn('No email provided. Skipping saveData call.');
@@ -95,6 +106,9 @@ const subscribeToFeeds = (client, AIO_USERNAME, userId) => {
                 saveData(email, 'humi', parseFloat(data), new Date(), userId);
             } else if (feed.includes('location')) {
                 saveData(email, 'location', data, new Date(), userId);
+            }
+            else if (feed.includes('relay-status')) {
+                saveData(email, 'relay', data, new Date(), userId);
             }
         } catch (error) {
             console.error('Error saving data to MongoDB:', error);

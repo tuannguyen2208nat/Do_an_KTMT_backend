@@ -3,8 +3,8 @@ const Transporter = require('../config/email');
 
 const emailQueue = new Queue('emailQueue', {
     redis: {
-        host: '127.0.0.1',  // Địa chỉ Redis
-        port: 6379          // Cổng Redis mặc định
+        host: '127.0.0.1',
+        port: 6379
     }
 });
 

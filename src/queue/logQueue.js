@@ -9,11 +9,14 @@ const logQueue = new Queue('logQueue', {
 });
 
 logQueue.process(async (job) => {
-    const { userID, activity } = job.data;
+    const { userID, activity, date } = job.data;
+    if (date === undefined) {
+        date = new Date();
+    }
     const newLog = new modelLog({
         userID: userID,
         activity,
-        Date: new Date()
+        Date: date
     });
     try {
         await newLog.save();
