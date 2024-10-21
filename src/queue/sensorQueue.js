@@ -40,7 +40,7 @@ sensorQueue.process(async (job) => {
                     userID: userID,
                     X: X,
                     Y: Y,
-                    Date: req.time || new Date(),
+                    Date: date,
                 });
                 await locationData.save();
                 break;

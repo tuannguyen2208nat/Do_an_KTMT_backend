@@ -17,6 +17,9 @@ const generateUniqueScheduleId = async (userID) => {
 
 const add_schedule = async (req, res, next) => {
     try {
+        if (req.role === 'user') {
+            return res.status(400).json({ error: 'You cannot add schedule. Please upgrade your account.' });
+        }
         const userID = req.user.id;
         const { schedule_name, day, time, actions, } = req.body;
         if (!userID) {
@@ -30,13 +33,21 @@ const add_schedule = async (req, res, next) => {
         }
         const existingSchedule = await Schedule.findOne({ userID, schedule_name });
         if (existingSchedule) {
-            return res.status(400).json({ error: 'This schedule already exists for this user.' });
+            if (!existingSchedule.userID.includes(userID)) {
+                existingSchedule.userID.push(userID);
+                await existingSchedule.save();
+                req.activity = `Schedule ${schedule_name} added`;
+                req.scheduleId = existingSchedule.schedule_id;
+            } else {
+                return res.status(400).json({ error: 'User is already in this Schedule.' });
+            }
+        } else {
+            const schedule_id = await generateUniqueScheduleId(userID);
+            const schedule = new Schedule({ userID: [userID], schedule_id, schedule_name, state: false, day, time, actions });
+            await schedule.save();
+            req.activity = `Schedule ${schedule_name} added`;
+            req.scheduleId = schedule_id;
         }
-        const schedule_id = await generateUniqueScheduleId(userID);
-        const schedule = new Schedule({ userID, schedule_id, schedule_name, state: false, day, time, actions });
-        await schedule.save();
-        req.activity = `Schedule ${schedule_name} added`;
-        req.scheduleId = schedule_id;
         next();
     } catch (error) {
         res.status(500).json({
