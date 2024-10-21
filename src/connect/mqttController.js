@@ -25,7 +25,7 @@ const saveData = async (email, type, data, date, mode = undefined) => {
         return;
     }
     console.log(
-        `\x1b[0m{ Date: \x1b[32m'${formatDate(date)}'\x1b[0m, Email: \x1b[32m'${email}'\x1b[0m, Type: \x1b[32m'${type}'\x1b[0m, Data: \x1b[32m${data}\x1b[0m }\x1b[0m`
+        `\x1b[0m{ Date: \x1b[32m${formatDate(date)}\x1b[0m, Email: \x1b[32m${email}\x1b[0m, Type: \x1b[32m${type}\x1b[0m, Data: \x1b[32m${data}\x1b[0m }\x1b[0m`
     );
 
     if (type === 'temp') {
@@ -36,7 +36,7 @@ const saveData = async (email, type, data, date, mode = undefined) => {
         sensorQueue.add({ userID: user.id, sensor: 'location', data, date });
     }
     else if (type === 'relay') {
-        relayQueue.add({ userID: user.id, data, date });
+        relayQueue.add({ userID: user.id, data, date, email });
     }
     else if (type === 'history') {
         if (!mode) {

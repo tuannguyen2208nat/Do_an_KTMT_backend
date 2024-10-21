@@ -15,7 +15,8 @@ relayQueue.process(async (job) => {
         const [relay_id, state] = data.split('-');
         const relay = await Relay.findOne({ relay_id: relay_id, userID: userID });
         if (!relay) {
-            console.error(`Relay with ID ${relay_id} not found for user ${userID}`);
+            const { email } = job.data;
+            console.error(`Relay with ID ${relay_id} not found for user ${email}`);
             return;
         }
         relay.state = state === 'ON' ? true : false;

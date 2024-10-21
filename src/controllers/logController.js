@@ -6,12 +6,12 @@ const logQueue = require('../queue/logQueue');
 const setLog = async (req, res) => {
     try {
         const userID = req.user.id;
-        const { activity } = req.body;
+        const { activity } = req;
         if (!activity) {
             return res.status(400).json({ error: 'Activity is required.' });
         }
         logQueue.add({ userID, activity });
-        res.status(200);
+        return res.status(200).json({ message: activity });;
     }
     catch (error) {
         res.status(500).json({

@@ -6,11 +6,17 @@ const sensorQueue = require('../queue/sensorQueue');
 const setTemp = async (req, res) => {
     try {
         const userID = req.user.id;
-        const data = req;
-        const date = req.time || new Date();
+        const { data } = req.body;
+        let { date } = req.body;
+        if (date === undefined) {
+            date = new Date();
+        }
         sensorQueue.add({ userID, sensor: 'temperature', data, date });
-        console.log('Temperature data saved to MongoDB');
+        res.status(200).json({
+            data: data,
+        });
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             error: 'Server error',
         });
@@ -20,10 +26,15 @@ const setTemp = async (req, res) => {
 const setHumi = async (req, res) => {
     try {
         const userID = req.user.id;
-        const data = req;
-        const date = req.time || new Date();
+        const { data } = req.body;
+        let { date } = req.body;
+        if (date === undefined) {
+            date = new Date();
+        }
         sensorQueue.add({ userID, sensor: 'humidity', data, date });
-        console.log('Humidyty data saved to MongoDB');
+        res.status(200).json({
+            data: data,
+        });
     } catch (error) {
         res.status(500).json({
             error: 'Server error',
@@ -34,10 +45,18 @@ const setHumi = async (req, res) => {
 const setLocation = async (req, res) => {
     try {
         const userID = req.user.id;
-        const data = req;
-        const date = req.time || new Date();
+        const { data } = req.body;
+        let { date } = req.body;
+        if (date === undefined) {
+            date = new Date();
+        }
+        if (!data.includes("-")) {
+            console.error('Wrong format. Expected "X-Y" format.')
+            return res.status(400).json({
+                error: 'Wrong format. Expected "X-Y" format.',
+            });
+        }
         sensorQueue.add({ userID, sensor: 'location', data, date });
-        console.log('Location data saved to MongoDB');
     } catch (error) {
         res.status(500).json({
             error: 'Server error',
