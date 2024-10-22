@@ -7,7 +7,7 @@ const ActionSchema = new Schema({
 });
 
 const ScheduleSchema = new Schema({
-    userID: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
+    userID: { type: Schema.Types.ObjectId, ref: 'Users' },
     schedule_id: { type: Number, required: true },
     schedule_name: { type: String },
     state: { type: Boolean, required: true },
@@ -15,5 +15,7 @@ const ScheduleSchema = new Schema({
     time: { type: String, required: true },
     actions: { type: [ActionSchema], required: true },
 });
+
+ScheduleSchema.index({ userID: 1, schedule_id: 1 }, { unique: true });
 
 module.exports = mongoose.model('Schedule', ScheduleSchema, 'Schedule');

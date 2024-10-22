@@ -13,26 +13,17 @@ const add_relay = async (req, res, next) => {
         if (!relay_name) {
             relay_name = `Relay ${relay_id}`;
         }
-
-        const relayCount = await Relay.countDocuments({ userID });
-        if (relayCount >= 2 && req.role === 'user') {
-            return res.status(400).json({ error: 'You cannot have more than 2 relays. Please upgrade your account.' });
-        }
-
         const existingRelay = await Relay.findOne({ userID, relay_id });
         if (existingRelay) {
-            if (!existingRelay.userID.includes(userID)) {
-                existingRelay.userID.push(userID);
-                await existingRelay.save();
-                req.activity = `Relay ${relay_id} added`;
-            } else {
-                return res.status(400).json({ error: 'User is already in this Relay.' });
-            }
-        } else {
-            const relay = new Relay({ userID: [userID], relay_id, relay_name, state: false, relay_home: false });
-            await relay.save();
-            req.activity = `Relay ${relay_id} added`;
+            return res.status(400).json({ error: 'Relay with this ID already exists for this user.' });
         }
+        const relayCount = await Relay.countDocuments({ userID });
+        if (relayCount >= 2 && req.role === 'user') {
+            return res.status(400).json({ error: 'Please upgradge your account.' });
+        }
+        const relay = new Relay({ userID, relay_id, relay_name, state: false, relay_home: false });
+        await relay.save();
+        req.activity = `Relay ${relay_id} added`;
         next();
     } catch (error) {
         res.status(500).json({
