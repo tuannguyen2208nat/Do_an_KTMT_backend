@@ -74,11 +74,14 @@ const calculateAverage = (allDates, step, result) => {
         let count = 0;
 
         for (let j = 0; j < step && i + j < allDates.length; j++) {
-            sum += parseFloat(allDates[i + j].value);
-            count++;
+            let value = parseFloat(allDates[i + j].value);
+            if (value !== 0) {
+                sum += value
+                count++;
+            }
         }
 
-        const averageValue = sum / count;
+        const averageValue = count != 0 ? sum / count : 0;
         const middleDate = allDates[Math.min(i + Math.floor(step / 2), allDates.length - 1)].date;
 
         result.push({
@@ -155,14 +158,14 @@ const getTemp = async (req, res) => {
         }
 
         let result = [];
-        if (time === 7) {
+        if (parseFloat(time) === 7) {
             result = allDates.map(date => ({ ...date }));
             result.pop();
         }
-        else if (time === 30) {
+        else if (parseFloat(time) === 30) {
             calculateAverage(allDates, 3, result);
         }
-        else if (time === 90) {
+        else if (parseFloat(time) === 90) {
             calculateAverage(allDates, 9, result);
         }
 
@@ -242,14 +245,14 @@ const getHumi = async (req, res) => {
         }
 
         let result = [];
-        if (time === 7) {
+        if (parseFloat(time) === 7) {
             result = allDates.map(date => ({ ...date }));
             result.pop();
         }
-        else if (time === 30) {
+        else if (parseFloat(time) === 30) {
             calculateAverage(allDates, 3, result);
         }
-        else if (time === 90) {
+        else if (parseFloat(time) === 90) {
             calculateAverage(allDates, 9, result);
         }
 
