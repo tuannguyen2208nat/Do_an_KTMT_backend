@@ -21,7 +21,7 @@ relayQueue.process(async (job) => {
         }
         relay.state = state === 'ON' ? true : false;
         await relay.save();
-        const activity = `Updated relay ${relay_id} to ${relay.state ? 'ON' : 'OFF'}`;
+        const activity = `Relay ${relay_id} ${relay.state ? 'ON' : 'OFF'}`;
         logQueue.add({ userID, activity, date });
     }
     catch (error) {
