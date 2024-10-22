@@ -4,7 +4,7 @@ var cors = require('cors');
 var adminQueueRouter = require('./queue/bullBoard')
 var mqttController = require('./connect/mqttController')
 
-const database = require('./config/Database');
+const database = require('./config/database');
 const routes = require('./routes/Routes');
 
 const port = process.env.PORT || 3001;
