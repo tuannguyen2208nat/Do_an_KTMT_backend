@@ -182,6 +182,12 @@ const reconnectMqtt = async (req, res) => {
             console.error(`User ${user.username} does not have Adafruit IO credentials`);
             return res.status(400).json({ message: `User ${user.username} does not have Adafruit IO credentials` });
         }
+
+        if (clients[userID]) {
+            clients[userID].end();
+            delete clients[userID];
+        }
+
         const clientId = `client-${user._id}-${Math.random().toString(36).substring(7)}`;
         const client = mqtt.connect(
             `mqtts://${AIO_USERNAME}:${AIO_KEY}@io.adafruit.com`,
@@ -191,25 +197,36 @@ const reconnectMqtt = async (req, res) => {
             }
         );
         clients[userID] = client;
-        client.on('connect', () => {
+        client.on('connect', async () => {
             console.log(`Reconnected to MQTT for user: ${user.username}`);
             subscribeToFeeds(client, AIO_USERNAME, user._id);
-            return res.status(200).json({ message: `Reconnected to MQTT for user: ${AIO_USERNAME}` });
+            try {
+                if (req.case === 'true') {
+                    await user.save();
+                    const userProfile = user.toObject();
+                    delete userProfile.password;
+                    return res.status(200).json({
+                        message: 'Profile updated successfully',
+                        data: userProfile,
+                    });
+                }
+                return res.status(200).json({ message: `Reconnected to MQTT for user: ${AIO_USERNAME}` });
+            } catch (error) {
+                console.error('Error saving user profile after MQTT connection:', error);
+                return res.status(500).json({ message: 'Error saving user profile after successful MQTT connection' });
+            }
         });
 
         client.on('error', (err) => {
             console.error(`Connection error for user ${user.username}:`, err);
             client.end();
-            return res.status(500).json({ message: 'MQTT connection error' });
+            return res.status(500).json({ message: 'MQTT connection error , please change Adafruit account' });
         });
     } catch (error) {
         console.error('Error reconnecting to MQTT:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
-
-
-
 
 module.exports = {
     connectAllUsers,

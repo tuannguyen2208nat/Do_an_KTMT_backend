@@ -6,7 +6,6 @@ const { ExpressAdapter } = require('@bull-board/express');
 const checkAdmin = require('../middlewares/checkRole');
 const authenticateToken = require('../middlewares/authenticateToken');
 
-const emailQueue = require('./emailQueue');
 const logQueue = require('./logQueue');
 const sensorQueue = require('./sensorQueue');
 
@@ -16,7 +15,6 @@ serverAdapter.setBasePath('/admin/queues');
 
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
     queues: [
-        new BullAdapter(emailQueue),
         new BullAdapter(logQueue),
         new BullAdapter(sensorQueue),
 

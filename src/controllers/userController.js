@@ -146,7 +146,7 @@ const get_profile = async (req, res) => {
     }
 }
 
-const edit_profile = async (req, res) => {
+const edit_profile = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const user = await modelUser.findById(userId).exec();
@@ -176,12 +176,8 @@ const edit_profile = async (req, res) => {
             }
         }
         await user.save();
-        const userProfile = user.toObject();
-        delete userProfile.password;
-        return res.status(200).json({
-            message: 'Profile updated successfully',
-            data: userProfile,
-        });
+        req.case = 'true';
+        next();
     } catch (error) {
         console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Server error' });
