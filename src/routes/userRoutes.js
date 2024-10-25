@@ -5,11 +5,11 @@ const profileRoutes = require('./profileRoutes');
 const refreshToken = require('../middlewares/refreshToken');
 const authenticateToken = require('../middlewares/authenticateToken');
 const emailorusername = require('../middlewares/emailorusername');
-
+const mqttController = require('../connect/mqttController')
 
 
 UserRouter.post('/login', emailorusername, Usercontroller.login);
-UserRouter.post('/register', Usercontroller.register);
+UserRouter.post('/register', Usercontroller.register, mqttController.newconnect);
 UserRouter.patch('/forgot-password', emailorusername, Usercontroller.forgot_password);
 UserRouter.get('/logout', authenticateToken, Usercontroller.logout);
 UserRouter.use('/profile', authenticateToken, profileRoutes);

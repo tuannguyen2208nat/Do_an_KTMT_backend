@@ -3,7 +3,8 @@ require('dotenv').config();
 const modelUser = require('../models/Users');
 const sensorQueue = require('../queue/sensorQueue');
 const relayQueue = require('../queue/relayQueue');
-
+const bcrypt = require('bcrypt');
+const Transporter = require('../config/email');
 
 const AIO_PORT = process.env.AIO_PORT;
 
@@ -84,7 +85,7 @@ const connectAllUsers = async () => {
 
         client.on('connect', () => {
             console.log(`Connected to MQTT for user: ${user.username}`);
-            subscribeToFeeds(client, AIO_USERNAME, user._id);
+            subscribeToFeeds(client, AIO_USERNAME);
         });
 
         client.on('error', (err) => {
@@ -96,7 +97,7 @@ const connectAllUsers = async () => {
     console.log('Finished attempting to connect to MQTT for all users');
 };
 
-const subscribeToFeeds = (client, AIO_USERNAME, UserID) => {
+const subscribeToFeeds = (client, AIO_USERNAME) => {
     const tempFeed = `${AIO_USERNAME}/feeds/temperature`;
     const humFeed = `${AIO_USERNAME}/feeds/humidity`;
     const locationFeed = `${AIO_USERNAME}/feeds/location`;
@@ -198,9 +199,9 @@ const reconnectMqtt = async (req, res) => {
         clients[userID] = client;
         client.on('connect', async () => {
             console.log(`Reconnected to MQTT for user: ${user.username}`);
-            subscribeToFeeds(client, AIO_USERNAME, user._id);
+            subscribeToFeeds(client, AIO_USERNAME);
             try {
-                if (req.case === 'true') {
+                if (req.case === 'edit_profile') {
                     await user.save();
                     const userProfile = user.toObject();
                     delete userProfile.password;
@@ -223,6 +224,80 @@ const reconnectMqtt = async (req, res) => {
         });
     } catch (error) {
         console.error('Error reconnecting to MQTT:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const newconnect = async (req, res) => {
+    const { username, email, password, aioUser, aioKey, phone } = req.body;
+
+    if (!aioUser || !aioKey) {
+        console.error(`User ${username} does not have Adafruit IO credentials`);
+        return res.status(400).json({ message: `User ${username} does not have Adafruit IO credentials` });
+    }
+
+    if (clients[username]) {
+        return res.status(400).json({ message: `User ${username} already has Adafruit IO credentials` });
+    }
+
+    try {
+        const clientId = `client-${Math.random().toString(36).substring(7)}`;
+        const client = mqtt.connect(
+            `mqtts://${aioUser}:${aioKey}@io.adafruit.com`,
+            {
+                port: process.env.AIO_PORT,
+                clientId: clientId,
+            }
+        );
+
+        clients[username] = client;
+
+        client.on('connect', async () => {
+            console.log(`New connect to MQTT for user: ${username}`);
+            subscribeToFeeds(client, aioUser);
+
+            try {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                const newUser = new modelUser({
+                    username,
+                    email,
+                    password: hashedPassword,
+                    role: 'user',
+                    AIO_USERNAME: aioUser,
+                    AIO_KEY: aioKey,
+                    phone_number: phone,
+                });
+
+                const result = await newUser.save();
+                if (result) {
+                    const mailOptions = {
+                        from: process.env.EMAIL,
+                        to: email,
+                        subject: 'Registration successful',
+                        text: 'You have successfully registered to our platform',
+                    };
+                    await Transporter.sendMail(mailOptions);
+                    return res.status(200).json({
+                        message: 'User registered successfully',
+                        data: result,
+                    });
+                }
+            } catch (error) {
+                console.error('Error saving user profile after MQTT connection:', error);
+                return res.status(500).json({ message: 'Error saving user profile after successful MQTT connection' });
+            }
+        });
+
+        client.on('error', (err) => {
+            console.error(`Connection error for user ${username}:`, err);
+            client.end();
+            if (clients[username]) {
+                delete clients[username];
+            }
+            return res.status(500).json({ message: 'MQTT connection error, please check Adafruit account details' });
+        });
+    } catch (error) {
+        console.error('Error connecting to MQTT:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
@@ -267,5 +342,6 @@ module.exports = {
     connectAllUsers,
     disconnectMqtt,
     reconnectMqtt,
+    newconnect,
     publishdata
 };

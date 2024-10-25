@@ -2,7 +2,6 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
-const Transporter = require('../config/email');
 
 const login = async (req, res) => {
     try {
@@ -53,7 +52,7 @@ const login = async (req, res) => {
     }
 };
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     try {
         const { username, email, password, aioUser, aioKey, phone } = req.body;
         if (!username || !email || !password || !aioUser || !aioKey || !phone) {
@@ -71,33 +70,7 @@ const register = async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new modelUser({
-            username,
-            email,
-            password: hashedPassword,
-            role: 'user',
-            AIO_USERNAME: aioUser,
-            AIO_KEY: aioKey,
-            phone_number: phone,
-        });
-
-        const result = await newUser.save();
-
-        if (result) {
-            const mailOptions = {
-                from: process.env.EMAIL,
-                to: email,
-                subject: 'Registration successful',
-                text: 'You have successfully registered to our platform',
-            };
-            await Transporter.sendMail(mailOptions)
-            res.status(200).json({
-                message: 'User registered successfully',
-                data: result,
-            });
-        }
+        next();
     } catch (error) {
         res.status(500).json({
             error: 'Server error'
@@ -176,7 +149,7 @@ const edit_profile = async (req, res, next) => {
             }
         }
         await user.save();
-        req.case = 'true';
+        req.case = 'edit_profile';
         next();
     } catch (error) {
         console.error('Error updating profile:', error);
