@@ -17,6 +17,6 @@ router.use('/email', emailRoutes);
 router.use('/log', authenticateToken, checkRole, logRoutes);
 router.use('/relay', authenticateToken, checkRole, relayRoutes);
 router.use('/schedule', authenticateToken, checkRole, scheduleRoutes);
-router.use('/mqtt', authenticateToken, checkRole, mqttRoutes);
+router.use('/mqtt', authenticateToken, mqttRoutes);
 
 module.exports = router;

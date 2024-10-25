@@ -96,7 +96,6 @@ const connectAllUsers = async () => {
     console.log('Finished attempting to connect to MQTT for all users');
 };
 
-
 const subscribeToFeeds = (client, AIO_USERNAME, UserID) => {
     const tempFeed = `${AIO_USERNAME}/feeds/temperature`;
     const humFeed = `${AIO_USERNAME}/feeds/humidity`;
@@ -228,8 +227,45 @@ const reconnectMqtt = async (req, res) => {
     }
 };
 
+const publishdata = async (req, res, next) => {
+    const userID = req.user.id;
+    if (!clients[userID]) {
+        return res.status(400).json({ error: 'MQTT not connected' });
+    }
+    const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME } = req;
+    let jsonData;
+    if (mode === 'Schedule') {
+        const status = state ? 'true' : 'false';
+        jsonData = JSON.stringify({
+            mode: mode,
+            id: scheduleid,
+            state: status,
+            days: day,
+            time: time,
+            actions: actions
+        });
+    }
+    else if (mode === 'Manual') {
+        const status = state ? 'ON' : 'OFF';
+        jsonData = JSON.stringify({
+            mode: mode,
+            index: relayid,
+            state: status
+        });
+    }
+    const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
+    clients[userID].publish(feedPath, jsonData, (err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to publish data' });
+        } else {
+            next();
+        }
+    });
+};
+
 module.exports = {
     connectAllUsers,
     disconnectMqtt,
     reconnectMqtt,
+    publishdata
 };

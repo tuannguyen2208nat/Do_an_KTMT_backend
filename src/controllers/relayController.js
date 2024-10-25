@@ -1,4 +1,5 @@
 const Relay = require('../models/Relay');
+const modelUser = require('../models/Users');
 
 const add_relay = async (req, res, next) => {
     try {
@@ -93,16 +94,16 @@ const set_relay = async (req, res, next) => {
 const delete_relay = async (req, res, next) => {
     try {
         const userID = req.user.id;
-        const { relay_id } = req.body;
-        if (!relay_id) {
+        const { relayId } = req.body;
+        if (!relayId) {
             return res.status(400).json({ error: 'Relay id is required.' });
         }
-        const relay = await Relay.findOne({ relay_id: relay_id, userID: userID });
+        const relay = await Relay.findOne({ relay_id: relayId, userID: userID });
         if (!relay) {
             return res.status(404).json({ error: 'Relay not found.' });
         }
         await relay.deleteOne();
-        req.activity = `Relay ${relay_id} deleted .`;
+        req.activity = `Relay ${relayId} deleted .`;
         next();
     }
     catch (error) {
@@ -111,6 +112,43 @@ const delete_relay = async (req, res, next) => {
         });
     }
 }
+
+const set_status = async (req, res, next) => {
+    try {
+        const userID = req.user.id;
+        const user = await modelUser.findById(userID);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const { relayId, state } = req.body;
+        if (!relayId) {
+            return res.status(400).json({ error: 'Relay id is required.' });
+        }
+        if (state === undefined) {
+            return res.status(400).json({ error: 'State is required.' });
+        }
+        const relay = await Relay.findOne({ relay_id: relayId, userID: userID });
+        if (!relay) {
+            return res.status(404).json({ error: 'Relay not found.' });
+        }
+        relay.state = state;
+        await relay.save();
+        req.mode = 'Manual';
+        req.relayid = relayId;
+        req.state = state;
+        req.feed = 'relay';
+        req.activity = `Relay ${relayId} ${state ? 'ON' : 'OFF'}`;
+        req.AIO_USERNAME = user.AIO_USERNAME;
+        next();
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({
+            error: 'Server error',
+        });
+    }
+}
+
 
 const set_relay_home = async (req, res, next) => {
     try {
@@ -161,6 +199,7 @@ module.exports = {
     get_relay,
     set_relay,
     delete_relay,
+    set_status,
     set_relay_home,
     get_relay_home
 };

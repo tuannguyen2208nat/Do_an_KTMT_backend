@@ -1,4 +1,5 @@
 const Schedule = require('../models/Schedule');
+const modelUser = require('../models/Users');
 
 const generateUniqueScheduleId = async (userID) => {
     let scheduleId;
@@ -113,15 +114,16 @@ const set_schedule = async (req, res, next) => {
 const set_status = async (req, res, next) => {
     try {
         const userID = req.user.id;
-        const { schedule_id, state, connect } = req.body;
+        const user = await modelUser.findById(userID);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const { schedule_id, state } = req.body;
         if (!schedule_id) {
             return res.status(400).json({ error: 'Schedule id is required.' });
         }
         if (state === undefined) {
             return res.status(400).json({ error: 'State is required.' });
-        }
-        if (connect === undefined) {
-            return res.status(400).json({ error: 'Connect is required.' });
         }
         const schedule = await Schedule.findOne({ schedule_id: schedule_id, userID: userID });
         if (!schedule) {
@@ -136,7 +138,8 @@ const set_status = async (req, res, next) => {
         req.time = schedule.time;
         req.actions = schedule.actions;
         req.feed = 'schedule';
-        req.activity = `Schedule ${schedule.schedule_name} state changed to ${schedule.state ? 'on' : 'off'}`;
+        req.activity = `Schedule ${schedule.schedule_name} ${schedule.state ? 'ON' : 'OFF'}`;
+        req.AIO_USERNAME = user.AIO_USERNAME;
         next();
     }
     catch (error) {
