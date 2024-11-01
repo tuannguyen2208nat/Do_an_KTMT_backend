@@ -126,7 +126,26 @@ const edit_profile = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const { username, fullname, email, phone_number, AIO_USERNAME, AIO_KEY, webServerIp } = req.body;
+        const { username, fullname, email, newpassword, phone_number, AIO_USERNAME, AIO_KEY, webServerIp, currentpassword } = req.body;
+        if (!currentpassword) {
+            return res.status(400).json({
+                error: 'Current password  are required.',
+            });
+        }
+
+        if (newpassword && newpassword.length < 8) {
+            return res.status(400).json({
+                error: 'New password must be at least 8 characters long.',
+            });
+        }
+
+        const isPasswordValid = await bcrypt.compare(currentpassword, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                error: 'Invalid current password.',
+            });
+        }
+
         user.username = username;
         user.fullname = fullname;
         user.email = email;
@@ -134,6 +153,10 @@ const edit_profile = async (req, res, next) => {
         user.AIO_KEY = AIO_KEY;
         user.phone_number = phone_number;
         user.webServerIp = webServerIp;
+        if (newpassword) {
+            const hashedPassword = await bcrypt.hash(newpassword, 10);
+            user.password = hashedPassword;
+        }
         if (req.files) {
             if (req.files['avatar']) {
                 user.avatar = {
@@ -203,6 +226,12 @@ const forgot_password = async (req, res) => {
                 error: 'User not found.',
             });
         }
+        if (newPassword && newPassword.length < 8) {
+            return res.status(400).json({
+                error: 'New password must be at least 8 characters long.',
+            });
+        }
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
         await user.save();

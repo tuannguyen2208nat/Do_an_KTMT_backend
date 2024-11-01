@@ -5,7 +5,6 @@ const upload = require('../middlewares/uploadMiddleware');
 const mqttController = require('../connect/mqttController')
 
 ProfileRouter.patch('/edit', upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'coverPhoto', maxCount: 1 }]), Usercontroller.edit_profile, mqttController.reconnectMqtt);
-ProfileRouter.patch('/change-password', Usercontroller.change_password);
 ProfileRouter.get('/', Usercontroller.get_profile);
 
 module.exports = ProfileRouter;
