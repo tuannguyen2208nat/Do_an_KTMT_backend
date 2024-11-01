@@ -70,7 +70,7 @@ const getLog = async (req, res) => {
 
             return {
                 ...log.toObject(),
-                Date: `${hours}:${minutes}:${seconds} ${day}:${month}:${year}`
+                Date: `${hours}/${minutes}/${seconds} ${day}/${month}/${year}`
             };
         });
 
