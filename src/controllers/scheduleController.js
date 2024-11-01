@@ -12,7 +12,6 @@ const generateUniqueScheduleId = async (userID) => {
             isUnique = true;
         }
     }
-
     return scheduleId;
 };
 
@@ -40,7 +39,7 @@ const add_schedule = async (req, res, next) => {
         req.scheduleId = schedule_id;
         next();
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -56,10 +55,10 @@ const get_schedule = async (req, res) => {
             }
             return schedule;
         });
-        res.status(200).json(schedulesArray);
+        return res.status(200).json(schedulesArray);
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -80,6 +79,7 @@ const set_schedule = async (req, res, next) => {
         }
 
         let result = '';
+
         if (new_schedule_name) {
             if (schedule.schedule_name !== new_schedule_name) {
                 schedule.schedule_name = new_schedule_name;
@@ -104,8 +104,7 @@ const set_schedule = async (req, res, next) => {
         req.activity = result.trim();
         next();
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -143,7 +142,7 @@ const set_status = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -166,7 +165,25 @@ const delete_schedule = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
+            error: 'Server error',
+        });
+    }
+}
+
+const get_schedule_home = async (req, res) => {
+    try {
+        const userID = req.user.id;
+        const days = [req.body.days];
+        const schedules = await Schedule.find({
+            userID: userID,
+            day: { $in: days }
+        });
+
+        return res.status(200).json(schedules);
+    }
+    catch (error) {
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -177,5 +194,6 @@ module.exports = {
     get_schedule,
     set_schedule,
     set_status,
-    delete_schedule
+    delete_schedule,
+    get_schedule_home
 };

@@ -27,8 +27,7 @@ const parseEmailOrUsername = async (req, res, next) => {
         }
         req.email = user.email;
     }
-
-    next();
+    return next();
 };
 
 module.exports = parseEmailOrUsername;

@@ -27,7 +27,7 @@ const add_relay = async (req, res, next) => {
         req.activity = `Relay ${relay_id} added`;
         next();
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -40,10 +40,9 @@ const get_relay = async (req, res) => {
         if (relays.length === 0) {
             return res.status(200).json({ message: 'Could not find any relays for this user.' });
         }
-        res.status(200).json(relays);
+        return res.status(200).json(relays);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -84,7 +83,7 @@ const set_relay = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -107,7 +106,7 @@ const delete_relay = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -142,8 +141,7 @@ const set_status = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.log(error)
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -174,7 +172,7 @@ const set_relay_home = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -185,10 +183,10 @@ const get_relay_home = async (req, res) => {
         const userID = req.user.id;
         const relays = await Relay.find({ userID: userID, relay_home: true });
         const relaysArray = [...relays];
-        res.status(200).json(relaysArray);
+        return res.status(200).json(relaysArray);
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }

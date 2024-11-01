@@ -74,10 +74,10 @@ const getLog = async (req, res) => {
             };
         });
 
-        res.status(200).json(formattedLogs);
+        return res.status(200).json(formattedLogs);
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -184,12 +184,10 @@ const getTemp = async (req, res) => {
             calculateAverage(allDates, 9, result);
         }
 
-        if (result.length > 0) {
-            res.status(200).json(result);
-        }
+        return res.status(200).json(result);
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -271,12 +269,10 @@ const getHumi = async (req, res) => {
             calculateAverage(allDates, 9, result);
         }
 
-        if (result.length > 0) {
-            res.status(200).json(result);
-        }
+        return res.status(200).json(result);
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }

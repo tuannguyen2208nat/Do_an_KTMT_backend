@@ -32,12 +32,12 @@ const send_code = async (req, res) => {
         const subject = 'Verification code';
         const text = `Your verification code is ${code}`;
         await sendVerificationCode(email, subject, text);
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Verification code sent successfully',
         });
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }
@@ -66,7 +66,7 @@ const confirm_code = async (req, res) => {
         }
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error',
         });
     }

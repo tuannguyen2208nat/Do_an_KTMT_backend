@@ -72,7 +72,7 @@ const register = async (req, res, next) => {
 
         next();
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Server error'
         });
     }
@@ -152,7 +152,6 @@ const edit_profile = async (req, res, next) => {
         req.case = 'edit_profile';
         next();
     } catch (error) {
-        console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Server error' });
     }
 };
