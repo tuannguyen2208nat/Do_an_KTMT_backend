@@ -174,10 +174,10 @@ const delete_schedule = async (req, res, next) => {
 const get_schedule_home = async (req, res) => {
     try {
         const userID = req.user.id;
-        const days = [req.body.days];
+        const day = [req.body.day];
         const schedules = await Schedule.find({
             userID: userID,
-            day: { $in: days }
+            day: { $in: day }
         });
 
         return res.status(200).json(schedules);

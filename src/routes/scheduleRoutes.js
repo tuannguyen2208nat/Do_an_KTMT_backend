@@ -10,5 +10,5 @@ ScheduleRoutes.get('/get', IpMiddleware('get schedule'), scheduleController.get_
 ScheduleRoutes.patch('/set', IpMiddleware('set schedule'), scheduleController.set_schedule, logController.setLog);
 ScheduleRoutes.delete('/delete', IpMiddleware('delete schedule'), scheduleController.delete_schedule, logController.setLog);
 ScheduleRoutes.patch('/set-status', IpMiddleware('set status schedule'), scheduleController.set_status, MQTTController.publishdata, logController.setLog);
-ScheduleRoutes.get('/get-home', IpMiddleware('get schedule home'), scheduleController.get_schedule_home);
+ScheduleRoutes.patch('/get-home', IpMiddleware('get schedule home'), scheduleController.get_schedule_home);
 module.exports = ScheduleRoutes;
