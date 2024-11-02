@@ -127,6 +127,11 @@ const edit_profile = async (req, res, next) => {
             return res.status(404).json({ error: 'User not found' });
         }
         const { username, fullname, email, newpassword, phone_number, AIO_USERNAME, AIO_KEY, webServerIp, currentpassword } = req.body;
+
+        if (!username && !fullname && !email && !newpassword && !phone_number && !AIO_USERNAME && !AIO_KEY && !webServerIp) {
+            return res.status(400).json({ error: 'No data provided to update.' });
+        }
+
         if (!currentpassword) {
             return res.status(400).json({
                 error: 'Current password  are required.',
@@ -146,13 +151,14 @@ const edit_profile = async (req, res, next) => {
             });
         }
 
-        user.username = username;
-        user.fullname = fullname;
-        user.email = email;
-        user.AIO_USERNAME = AIO_USERNAME;
-        user.AIO_KEY = AIO_KEY;
-        user.phone_number = phone_number;
-        user.webServerIp = webServerIp;
+        if (username !== undefined) user.username = username;
+        if (fullname !== undefined) user.fullname = fullname;
+        if (email !== undefined) user.email = email;
+        if (phone_number !== undefined) user.phone_number = phone_number;
+        if (AIO_USERNAME !== undefined) user.AIO_USERNAME = AIO_USERNAME;
+        if (AIO_KEY !== undefined) user.AIO_KEY = AIO_KEY;
+        if (webServerIp !== undefined) user.webServerIp = webServerIp;
+
         if (newpassword) {
             const hashedPassword = await bcrypt.hash(newpassword, 10);
             user.password = hashedPassword;
@@ -171,7 +177,15 @@ const edit_profile = async (req, res, next) => {
                 };
             }
         }
-        await user.save();
+        if (!AIO_USERNAME && !AIO_KEY) {
+            await user.save();
+            const userProfile = user.toObject();
+            delete userProfile.password;
+            return res.status(200).json({
+                message: 'Profile updated successfully',
+                data: userProfile,
+            });
+        }
         req.case = 'edit_profile';
         next();
     } catch (error) {
