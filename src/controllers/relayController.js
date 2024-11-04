@@ -161,8 +161,8 @@ const set_relay_home = async (req, res, next) => {
         }
         if (relay_home) {
             const relayHomeCount = await Relay.countDocuments({ userID: userID, relay_home: true });
-            if (relayHomeCount >= 4) {
-                return res.status(400).json({ error: 'Maximum of 4 relays on HomePage' });
+            if (relayHomeCount > 6) {
+                return res.status(400).json({ error: 'Maximum of 6 relays on HomePage' });
             }
         }
         relay.relay_home = relay_home;
