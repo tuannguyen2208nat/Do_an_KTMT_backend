@@ -6,14 +6,26 @@ const upload = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
+        const { board, version } = req.body;
+        if (!board || !version) {
+            return res.status(400).json({ message: 'Board and version are required' });
+        }
+        if (board !== "yolo uno" && board !== "relay 6ch") {
+            return res.status(400).json({ message: 'Invalid board type.' });
+        }
+        const existingFirmware = await Firmware.findOne({ board: board, version: version });
+        if (existingFirmware) {
+            return res.status(400).json({ message: `Version already exists for this ${board}` });
+        }
         const size = `${(req.file.size / 1024).toFixed(2)} KB`;
         const newFirmware = new Firmware({
             userID: req.user.id,
+            board: board,
             file: {
                 data: req.file.buffer,
                 contentType: req.file.mimetype,
             },
-            version: req.body.version,
+            version: version,
             size: size,
         });
         await newFirmware.save();
@@ -27,13 +39,19 @@ const upload = async (req, res) => {
 };
 
 const downloadFile = async (req, res) => {
-    const { version } = req.body;
+    const { board, version } = req.body;
     try {
+        if (!board || !version) {
+            return res.status(400).json({ message: 'Board and version are required' });
+        }
         const user = await modelUser.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const firmware = await Firmware.findOne({ version });
+        if (board !== "yolo uno" && board !== "relay 6ch") {
+            return res.status(400).json({ message: 'Invalid board type.' });
+        }
+        const firmware = await Firmware.findOne({ board: board, version: version });
         if (!firmware) {
             return res.status(404).json({ message: 'Firmware not found' });
         }
@@ -60,7 +78,14 @@ const getVersions = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const firmwares = await Firmware.find({}, 'version size');
+        const { board } = req.body;
+        if (!board) {
+            return res.status(400).json({ message: 'Board is required' });
+        }
+        if (board !== "yolo uno" && board !== "relay 6ch") {
+            return res.status(400).json({ message: 'Invalid board type.' });
+        }
+        const firmwares = await Firmware.find({ board: board }, 'version size');
         const versions = firmwares.map(firmware => ({
             version: firmware.version,
             size: firmware.size

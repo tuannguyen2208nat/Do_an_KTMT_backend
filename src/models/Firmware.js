@@ -3,6 +3,11 @@ const Schema = mongoose.Schema;
 
 const FirmwareSchema = new Schema({
     userID: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
+    board: {
+        type: String,
+        required: true,
+        enum: ['yolo uno', 'relay 6ch'],
+    },
     file: {
         data: { type: Buffer, required: true },
         contentType: { type: String, required: true },
