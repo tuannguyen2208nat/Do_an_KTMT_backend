@@ -1,10 +1,10 @@
 var express = require('express');
-var ProfileRouter = express.Router();
+var FirmwareRouter = express.Router();
 const firmwareController = require('../controllers/firmwareController');
 const upload = require('../middlewares/uploadMiddleware');
 
-ProfileRouter.post('/upload', upload.single('file'), firmwareController.upload);
-ProfileRouter.post('/download', firmwareController.downloadFile);
-ProfileRouter.post('/get', firmwareController.getVersions);
+FirmwareRouter.post('/upload', upload.single('file'), firmwareController.upload);
+FirmwareRouter.post('/download', firmwareController.downloadFile);
+FirmwareRouter.post('/get', firmwareController.getVersions);
 
-module.exports = ProfileRouter;
+module.exports = FirmwareRouter;
