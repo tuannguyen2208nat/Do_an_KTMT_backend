@@ -6,7 +6,7 @@ const FirmwareSchema = new Schema({
     board: {
         type: String,
         required: true,
-        enum: ['yolo uno', 'relay 6ch'],
+        enum: ['Yolo Uno', 'Relay 6ch'],
     },
     file: {
         data: { type: Buffer, required: true },

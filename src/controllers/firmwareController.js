@@ -10,7 +10,7 @@ const upload = async (req, res) => {
         if (!board || !version) {
             return res.status(400).json({ message: 'Board and version are required' });
         }
-        if (board !== "yolo uno" && board !== "relay 6ch") {
+        if (board !== "Yolo Uno" && board !== "Relay 6ch") {
             return res.status(400).json({ message: 'Invalid board type.' });
         }
         const existingFirmware = await Firmware.findOne({ board: board, version: version });
@@ -48,7 +48,7 @@ const downloadFile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        if (board !== "yolo uno" && board !== "relay 6ch") {
+        if (board !== "Yolo Uno" && board !== "Relay 6ch") {
             return res.status(400).json({ message: 'Invalid board type.' });
         }
         const firmware = await Firmware.findOne({ board: board, version: version });
@@ -82,7 +82,7 @@ const getVersions = async (req, res) => {
         if (!board) {
             return res.status(400).json({ message: 'Board is required' });
         }
-        if (board !== "yolo uno" && board !== "relay 6ch") {
+        if (board !== "Yolo Uno" && board !== "Relay 6ch") {
             return res.status(400).json({ message: 'Invalid board type.' });
         }
         const firmwares = await Firmware.find({ board: board }, 'version size');
