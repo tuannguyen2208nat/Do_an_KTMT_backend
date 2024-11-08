@@ -85,12 +85,18 @@ const getVersions = async (req, res) => {
         if (board !== "Yolo Uno" && board !== "Relay 6ch") {
             return res.status(400).json({ message: 'Invalid board type.' });
         }
-        const firmwares = await Firmware.find({ board: board }, 'version size');
-        const versions = firmwares.map(firmware => ({
-            version: firmware.version,
-            size: firmware.size
-        }));
-        return res.status(200).json(versions);
+        const latestFirmware = await Firmware.findOne({ board })
+            .sort({ version: -1 })
+            .select('version size');
+
+        if (!latestFirmware) {
+            return res.status(404).json({ message: 'No firmware found for this board type.' });
+        }
+
+        return res.status(200).json({
+            version: latestFirmware.version,
+            size: latestFirmware.size,
+        });
     } catch (error) {
         console.error('Error retrieving firmware versions:', error);
         return res.status(500).json({
