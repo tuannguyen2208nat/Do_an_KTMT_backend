@@ -8,6 +8,7 @@ const authenticateToken = require('../middlewares/authenticateToken');
 
 const logQueue = require('./logQueue');
 const sensorQueue = require('./sensorQueue');
+const userQueue = require('./userQueue');
 
 
 const serverAdapter = new ExpressAdapter();
@@ -17,6 +18,7 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
     queues: [
         new BullAdapter(logQueue),
         new BullAdapter(sensorQueue),
+        new BullAdapter(userQueue),
 
     ],
     serverAdapter: serverAdapter,

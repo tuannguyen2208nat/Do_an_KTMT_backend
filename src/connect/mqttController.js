@@ -3,6 +3,7 @@ require('dotenv').config();
 const modelUser = require('../models/Users');
 const sensorQueue = require('../queue/sensorQueue');
 const relayQueue = require('../queue/relayQueue');
+const userQueue = require('../queue/userQueue');
 const bcrypt = require('bcrypt');
 const Transporter = require('../config/email');
 
@@ -51,7 +52,9 @@ const saveData = async (email, type, data, date, mode = undefined) => {
         else if (mode === 'location') {
             sensorQueue.add({ userID: user.id, sensor: 'location', data, date });
         }
-
+    }
+    else if (type === 'ip') {
+        userQueue.add({ userID: user.id, data, date });
     }
 };
 
@@ -103,20 +106,17 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
     const locationFeed = `${AIO_USERNAME}/feeds/location`;
     const historyFeed = `${AIO_USERNAME}/feeds/history`;
     const relayFeed = `${AIO_USERNAME}/feeds/relay-status`;
+    const ipFeed = `${AIO_USERNAME}/feeds/ip`;
 
-    [tempFeed,
-        humFeed,
-        historyFeed,
-        locationFeed,
-        relayFeed].forEach((feed) => {
-            client.subscribe(feed, (err) => {
-                if (err) {
-                    console.error('Subscription error:', err);
-                } else {
-                    console.log(`Subscribed to feed: ${feed}`);
-                }
-            });
+    [tempFeed, humFeed, historyFeed, locationFeed, relayFeed, ipFeed].forEach((feed) => {
+        client.subscribe(feed, (err) => {
+            if (err) {
+                console.error('Subscription error:', err);
+            } else {
+                console.log(`Subscribed to feed: ${feed}`);
+            }
         });
+    });
 
     client.on('message', async (topic, message) => {
         const feed = topic;
@@ -139,6 +139,9 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
             }
             else if (feed.includes('history')) {
                 saveData(email, 'history', data, time, mode);
+            }
+            else if (feed.includes('ip')) {
+                saveData(email, 'ip', data, new Date());
             }
         } catch (error) {
             console.error('Error saving data to MongoDB:', error);

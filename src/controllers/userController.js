@@ -1,54 +1,63 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const modelUser = require('../models/Users');
 const JWT = require('jsonwebtoken');
+//Model
+const modelUser = require('../models/Users');
+const Relay = require('../models/Relay');
+const HumiditySensors = require('../models/HumiditySensors');
+const TemperatureSensors = require('../models/TemperatureSensors');
+const Location = require('../models/Location');
 
 const login = async (req, res) => {
     try {
-        const { email } = req;
+        const { email } = req.body;
         const { password } = req.body;
-        const user = await modelUser.findOne({ email });
-        const username = user.username;
 
-        if (!username || !password) {
-            return res.status(400).json({
-                error: 'Username and password are required.',
-            });
+        const user = await modelUser.findOne({ email }).select('+password').exec();
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        if (user) {
-            const isPasswordValid = await bcrypt.compare(password, user.password);
-            if (!isPasswordValid) {
-                return res.status(401).json({
-                    error: 'Invalid username or password',
-                });
-            }
-
-            const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, {
-                expiresIn: '1h',
-            });
-            const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, {
-                expiresIn: '7d',
-            });
-
-            user.refreshToken = refreshToken;
-
-            await user.save();
-
-            return res.status(200).json({
-                message: 'Login successful',
-                accessToken,
-                refreshToken
-            });
-        } else {
-            return res.status(401).json({
-                error: 'Invalid username or password',
-            });
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid username or password' });
         }
-    } catch (error) {
-        return res.status(500).json({
-            error: 'Server error'
+
+        const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, { expiresIn: '1h' });
+        const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, { expiresIn: '7d' });
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        const userID = user._id;
+        const [relays, latestTemp, latestHumi, latestLocation] = await Promise.all([
+            Relay.find({ userID, relay_home: true }),
+            TemperatureSensors.findOne({ userID }).sort({ Date: -1 }).exec(),
+            HumiditySensors.findOne({ userID }).sort({ Date: -1 }).exec(),
+            Location.findOne({ userID }).sort({ Date: -1 }).exec(),
+        ]);
+
+        const temp = latestTemp ? latestTemp.data : "0.0";
+        const humi = latestHumi ? latestHumi.data : "0.0";
+        const location = latestLocation ? latestLocation.data : "0.0-0.0";
+
+        const userProfile = user.toObject();
+        delete userProfile.password;
+
+        return res.status(200).json({
+            message: 'Login successful',
+            accessToken,
+            refreshToken,
+            relaysArray: relays,
+            temperature: temp,
+            humidity: humi,
+            location: location,
+            data: userProfile,
         });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Server error' });
     }
 };
 
