@@ -7,13 +7,14 @@ const Relay = require('../models/Relay');
 const HumiditySensors = require('../models/HumiditySensors');
 const TemperatureSensors = require('../models/TemperatureSensors');
 const Location = require('../models/Location');
+const Schedule = require('../models/Schedule');
 
 const login = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email } = req;
         const { password } = req.body;
 
-        const user = await modelUser.findOne({ email }).select('+password').exec();
+        const user = await modelUser.findOne({ email }).select('+password').lean().exec();
         if (!user) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
@@ -26,33 +27,41 @@ const login = async (req, res) => {
         const accessToken = JWT.sign({ id: user._id }, process.env.accessTokenSecret, { expiresIn: '1h' });
         const refreshToken = JWT.sign({ id: user._id }, process.env.refreshTokenSecret, { expiresIn: '7d' });
 
-        user.refreshToken = refreshToken;
-        await user.save();
+        await modelUser.updateOne({ _id: user._id }, { refreshToken });
+
+        const dayOfWeek = new Date().getDay();
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const day = daysOfWeek[dayOfWeek];
 
         const userID = user._id;
-        const [relays, latestTemp, latestHumi, latestLocation] = await Promise.all([
-            Relay.find({ userID, relay_home: true }),
-            TemperatureSensors.findOne({ userID }).sort({ Date: -1 }).exec(),
-            HumiditySensors.findOne({ userID }).sort({ Date: -1 }).exec(),
-            Location.findOne({ userID }).sort({ Date: -1 }).exec(),
+        const [relays, relays_home, latestTemp, latestHumi, latestLocation, schedules, schedules_home] = await Promise.all([
+            Relay.find({ userID }).lean(),
+            Relay.find({ userID, relay_home: true }).lean(),
+            TemperatureSensors.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
+            HumiditySensors.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
+            Location.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
+            Schedule.find({ userID }).lean(),
+            Schedule.find({ userID, day: { $in: day } }).lean()
         ]);
 
-        const temp = latestTemp ? latestTemp.data : "0.0";
-        const humi = latestHumi ? latestHumi.data : "0.0";
-        const location = latestLocation ? latestLocation.data : "0.0-0.0";
+        const temperature = latestTemp?.data || "0.0";
+        const humidity = latestHumi?.data || "0.0";
+        const location = latestLocation?.data || "10.7736288-106.6602627";
 
-        const userProfile = user.toObject();
-        delete userProfile.password;
+        const { password: _, ...userProfile } = user;
 
         return res.status(200).json({
             message: 'Login successful',
             accessToken,
             refreshToken,
-            relaysArray: relays,
-            temperature: temp,
-            humidity: humi,
-            location: location,
-            data: userProfile,
+            temperature,
+            humidity,
+            location,
+            relays,
+            relays_home,
+            profile: userProfile,
+            schedules,
+            schedules_home,
         });
 
     } catch (error) {
@@ -60,6 +69,7 @@ const login = async (req, res) => {
         return res.status(500).json({ error: 'Server error' });
     }
 };
+
 
 const register = async (req, res, next) => {
     try {
