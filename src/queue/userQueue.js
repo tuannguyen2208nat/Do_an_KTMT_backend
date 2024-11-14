@@ -17,7 +17,6 @@ userQueue.process(async (job) => {
         await user.save();
     }
     catch (error) {
-        console.error('Error updating relay:', error);
         throw new Error(error);
     }
 });

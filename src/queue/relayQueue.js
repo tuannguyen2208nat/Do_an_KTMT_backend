@@ -25,7 +25,6 @@ relayQueue.process(async (job) => {
         logQueue.add({ userID, activity, date });
     }
     catch (error) {
-        console.error('Error updating relay:', error);
         throw new Error(error);
     }
 });

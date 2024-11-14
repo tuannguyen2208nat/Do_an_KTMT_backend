@@ -31,8 +31,7 @@ boardQueue.process(async (job) => {
         try {
             await newBoard.save(); // Save new document
         } catch (error) {
-            console.error('Error saving new board:', error);
-            throw new Error('Board saving failed');
+            throw new Error(error);
         }
     }
 });

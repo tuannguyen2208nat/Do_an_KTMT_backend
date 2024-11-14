@@ -21,8 +21,7 @@ logQueue.process(async (job) => {
     try {
         await newLog.save();
     } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error('Log saving failed');
+        throw new Error(error);
     }
 });
 

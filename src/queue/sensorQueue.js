@@ -48,8 +48,7 @@ sensorQueue.process(async (job) => {
         }
     }
     catch (error) {
-        console.error('Lỗi khi lưu dữ liệu cảm biến:', error);
-        throw new Error('Lưu dữ liệu cảm biến thất bại');
+        throw new Error(error);
     }
 });
 
