@@ -141,7 +141,7 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
             } else if (feed.includes('location')) {
                 saveData(email, 'location', data, new Date());
             }
-            else if (feed.includes('relay-status')) {
+            else if (feed.includes('relay')) {
                 saveData(email, 'relay', data, new Date());
             }
             else if (feed.includes('history')) {
