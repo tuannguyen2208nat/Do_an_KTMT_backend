@@ -115,10 +115,6 @@ const delete_relay = async (req, res, next) => {
 const set_status = async (req, res, next) => {
     try {
         const userID = req.user.id;
-        const user = await modelUser.findById(userID);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
         const { relayId, state } = req.body;
         if (!relayId) {
             return res.status(400).json({ error: 'Relay id is required.' });

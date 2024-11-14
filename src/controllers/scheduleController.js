@@ -113,10 +113,6 @@ const set_schedule = async (req, res, next) => {
 const set_status = async (req, res, next) => {
     try {
         const userID = req.user.id;
-        const user = await modelUser.findById(userID);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
         const { schedule_id, state } = req.body;
         if (!schedule_id) {
             return res.status(400).json({ error: 'Schedule id is required.' });

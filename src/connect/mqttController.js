@@ -4,6 +4,7 @@ const modelUser = require('../models/Users');
 const sensorQueue = require('../queue/sensorQueue');
 const relayQueue = require('../queue/relayQueue');
 const userQueue = require('../queue/userQueue');
+const boardQueue = require('../queue/boardQueue');
 const bcrypt = require('bcrypt');
 const Transporter = require('../config/email');
 
@@ -32,9 +33,11 @@ const saveData = async (email, type, data, date, mode = undefined) => {
 
     if (type === 'temp') {
         sensorQueue.add({ userID: user.id, sensor: 'temperature', data, date });
-    } else if (type === 'humi') {
+    }
+    else if (type === 'humi') {
         sensorQueue.add({ userID: user.id, sensor: 'humidity', data, date });
-    } else if (type === 'location') {
+    }
+    else if (type === 'location') {
         sensorQueue.add({ userID: user.id, sensor: 'location', data, date });
     }
     else if (type === 'relay') {
@@ -55,6 +58,9 @@ const saveData = async (email, type, data, date, mode = undefined) => {
     }
     else if (type === 'ip') {
         userQueue.add({ userID: user.id, data, date });
+    }
+    else if (type === 'firmware') {
+        boardQueue.add({ userID: user.id, board: data, version: mode, date });
     }
 };
 
@@ -105,10 +111,11 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
     const humFeed = `${AIO_USERNAME}/feeds/humidity`;
     const locationFeed = `${AIO_USERNAME}/feeds/location`;
     const historyFeed = `${AIO_USERNAME}/feeds/history`;
-    const relayFeed = `${AIO_USERNAME}/feeds/relay-status`;
+    const relayFeed = `${AIO_USERNAME}/feeds/relay`;
     const ipFeed = `${AIO_USERNAME}/feeds/ip`;
+    const firmwareFeed = `${AIO_USERNAME}/feeds/firmware`;
 
-    [tempFeed, humFeed, historyFeed, locationFeed, relayFeed, ipFeed].forEach((feed) => {
+    [tempFeed, humFeed, historyFeed, locationFeed, relayFeed, ipFeed, firmwareFeed].forEach((feed) => {
         client.subscribe(feed, (err) => {
             if (err) {
                 console.error('Subscription error:', err);
@@ -142,6 +149,9 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
             }
             else if (feed.includes('ip')) {
                 saveData(email, 'ip', data, new Date());
+            }
+            else if (feed.includes('firmware')) {
+                saveData(email, 'firmware', data, new Date(), mode);
             }
         } catch (error) {
             console.error('Error saving data to MongoDB:', error);
@@ -310,11 +320,12 @@ const publishdata = async (req, res, next) => {
     if (!clients[userID]) {
         return res.status(400).json({ error: 'MQTT not connected' });
     }
-    const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME } = req;
+    const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME, email } = req;
     let jsonData;
     if (mode === 'Schedule') {
         const status = state ? 'true' : 'false';
         jsonData = JSON.stringify({
+            email: email,
             mode: mode,
             id: scheduleid,
             state: status,
@@ -326,6 +337,7 @@ const publishdata = async (req, res, next) => {
     else if (mode === 'Manual') {
         const status = state ? 'ON' : 'OFF';
         jsonData = JSON.stringify({
+            email: email,
             mode: mode,
             index: relayid,
             state: status
