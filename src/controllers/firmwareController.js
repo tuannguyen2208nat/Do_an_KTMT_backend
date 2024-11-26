@@ -39,30 +39,37 @@ const upload = async (req, res) => {
 };
 
 const downloadFile = async (req, res) => {
-    const { board, version } = req.body;
+    const { board } = req.body;
     try {
-        if (!board || !version) {
-            return res.status(400).json({ message: 'Board and version are required' });
-        }
-        const user = await modelUser.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!board) {
+            return res.status(400).json({ message: 'Board is required' });
         }
         if (board !== "Yolo Uno" && board !== "Relay 6ch") {
             return res.status(400).json({ message: 'Invalid board type.' });
         }
-        const firmware = await Firmware.findOne({ board: board, version: version });
+        const firmware = await Firmware.findOne({ board: board })
+            .sort({ version: -1 })
+            .exec();
+
         if (!firmware) {
             return res.status(404).json({ message: 'Firmware not found' });
         }
+
         const fileBuffer = firmware.file.data;
-        const fileName = `firmware_${version}`;
+        const fileName = `firmware_${firmware.version}`;
         const contentType = firmware.file.contentType;
+        const fileSize = firmware.size;
         res.set({
             'Content-Disposition': `attachment; filename="${fileName}"`,
             'Content-Type': contentType,
         });
-        return res.send(fileBuffer);
+
+        return res.status(200).json({
+            file: fileBuffer.toString('base64'),
+            size: fileSize,
+            contentType: contentType,
+            version: firmware.version,
+        });
     } catch (error) {
         console.error('Error downloading firmware:', error);
         return res.status(500).json({
@@ -74,10 +81,6 @@ const downloadFile = async (req, res) => {
 const getVersions = async (req, res) => {
     const userId = req.user.id;
     try {
-        const user = await modelUser.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
         const { board } = req.body;
         if (!board) {
             return res.status(400).json({ message: 'Board is required' });
@@ -92,7 +95,6 @@ const getVersions = async (req, res) => {
         if (!latestFirmware) {
             return res.status(404).json({ message: 'No firmware found for this board type.' });
         }
-
         return res.status(200).json({
             version: latestFirmware.version,
             size: latestFirmware.size,
