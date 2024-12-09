@@ -20,7 +20,7 @@ const refreshToken = async (req, res) => {
         });
 
         const newAccessToken = JWT.sign({ id: dbUser._id }, accessTokenSecret, { expiresIn: '1h' });
-        return res.status(200).res.json({ accessToken: newAccessToken });
+        return res.status(200).json({ accessToken: newAccessToken });
     });
 };
 
