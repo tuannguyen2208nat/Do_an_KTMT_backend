@@ -44,8 +44,8 @@ const login = async (req, res) => {
             Schedule.find({ userID, day: { $in: day } }).lean()
         ]);
 
-        const temperature = latestTemp?.data || "0.0";
-        const humidity = latestHumi?.data || "0.0";
+        const temperature = latestTemp?.data || 0.0;
+        const humidity = latestHumi?.data || 0.0;
         const location = latestLocation?.data || "10.7736288-106.6602627";
 
         const { password: _, ...userProfile } = user;

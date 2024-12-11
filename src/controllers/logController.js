@@ -116,13 +116,13 @@ const getTemp = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        if (time !== 7 && req.role === 'user') {
+        if (time !== '7' && req.role === 'user') {
             return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - time + 1);
+        startDate.setDate(endDate.getDate() - time + (time === '7' ? 0 : 1));
 
         const data = await TemperatureSensors.find({
             userID: userId,
@@ -202,13 +202,13 @@ const getHumi = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        if (time !== 7 && req.role === 'user') {
+        if (time !== '7' && req.role === 'user') {
             return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - time + 1);
+        startDate.setDate(endDate.getDate() - time + (time === '7' ? 0 : 1));
 
         const data = await HumiditySensors.find({
             userID: userId,
