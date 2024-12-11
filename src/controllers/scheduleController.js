@@ -124,6 +124,7 @@ const set_status = async (req, res, next) => {
         if (!schedule) {
             return res.status(404).json({ error: 'Schedule not found.' });
         }
+        const user = await modelUser.findById(userID);
         schedule.state = state;
         await schedule.save();
         req.mode = 'Schedule';

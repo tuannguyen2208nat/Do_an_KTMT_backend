@@ -126,6 +126,7 @@ const set_status = async (req, res, next) => {
         if (!relay) {
             return res.status(404).json({ error: 'Relay not found.' });
         }
+        const user = await modelUser.findById(userID);
         relay.state = state;
         await relay.save();
         req.mode = 'Manual';
