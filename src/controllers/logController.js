@@ -116,7 +116,7 @@ const getTemp = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        if (time !== '7' && req.role === 'user') {
+        if (time != '7' && req.role == 'user') {
             return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
@@ -202,7 +202,7 @@ const getHumi = async (req, res) => {
             return res.status(400).json({ error: 'Time period and user ID are required.' });
         }
 
-        if (time !== '7' && req.role === 'user') {
+        if (time != '7' && req.role == 'user') {
             return res.status(400).json({ error: 'Please upgradge your account.' });
         }
 
