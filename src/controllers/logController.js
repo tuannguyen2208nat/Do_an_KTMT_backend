@@ -40,13 +40,15 @@ const getLog = async (req, res) => {
 
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
 
         if (startDate > endDate) {
             return res.status(400).json({ error: 'Start date must be before end date.' });
         }
 
-        if (getNumberOfDays(startDate, endDate) > 7 && req.role === 'user') {
-            return res.status(400).json({ error: 'Please upgradge your account.' });
+        if (getNumberOfDays(startDate, currentDate) > 7 && req.role == 'user') {
+            return res.status(400).json({ error: 'You can only request up to 7 days of data. Please upgrade your account for more.' });
         }
 
         const logs = await modelLog.find({
@@ -117,7 +119,7 @@ const getTemp = async (req, res) => {
         }
 
         if (time != '7' && req.role == 'user') {
-            return res.status(400).json({ error: 'Please upgradge your account.' });
+            return res.status(400).json({ error: 'You can only view the chart for the past 7 days.Please upgradge your account.' });
         }
 
         const endDate = new Date();
@@ -203,7 +205,7 @@ const getHumi = async (req, res) => {
         }
 
         if (time != '7' && req.role == 'user') {
-            return res.status(400).json({ error: 'Please upgradge your account.' });
+            return res.status(400).json({ error: 'You can only view the chart for the past 7 days.Please upgradge your account.' });
         }
 
         const endDate = new Date();
