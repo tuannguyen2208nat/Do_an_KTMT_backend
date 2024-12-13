@@ -141,8 +141,8 @@ const getTemp = async (req, res) => {
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
                 allDates.push({
-                    Date: currentDate.toISOString().split('T')[0],
-                    AverageTemperature: 0
+                    date: currentDate.toISOString().split('T')[0],
+                    value: 0
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
@@ -227,8 +227,8 @@ const getHumi = async (req, res) => {
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
                 allDates.push({
-                    Date: currentDate.toISOString().split('T')[0],
-                    AverageTemperature: 0
+                    date: currentDate.toISOString().split('T')[0],
+                    value: 0
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
