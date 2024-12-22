@@ -39,10 +39,16 @@ const login = async (req, res) => {
             Relay.find({ userID, relay_home: true }).lean(),
             TemperatureSensors.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
             HumiditySensors.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
-            Location.findOne({ userID }).sort({ Date: -1 }).select('data').lean().exec(),
+            Location.findOne({ userID }).sort({ Date: -1 }).select('X Y').lean().exec(),
             Schedule.find({ userID }).lean(),
             Schedule.find({ userID, day: { $in: day } }).lean()
         ]);
+
+        if (latestLocation) {
+            latestLocation["data"] = `${latestLocation.X}-${latestLocation.Y}`;
+            delete latestLocation.X;
+            delete latestLocation.Y;
+        }
 
         const temperature = latestTemp?.data || 0.0;
         const humidity = latestHumi?.data || 0.0;
