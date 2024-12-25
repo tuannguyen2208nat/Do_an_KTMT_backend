@@ -80,9 +80,9 @@ const login = async (req, res) => {
 const register = async (req, res, next) => {
     try {
         const { username, email, password, aioUser, aioKey, phone } = req.body;
-        if (!username || !email || !password || !aioUser || !aioKey || !phone) {
+        if (!username || !fullname || !email || !password || !aioUser || !aioKey || !phone) {
             return res.status(400).json({
-                message: 'Username, email, password ,phone, AIO_USERNAME and AIO_KEY are required.',
+                message: 'Username,fullname, email, password ,phone, AIO_USERNAME and AIO_KEY are required.',
             });
         }
         const existingUser = await modelUser.findOne({

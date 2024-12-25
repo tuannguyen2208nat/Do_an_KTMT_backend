@@ -242,7 +242,7 @@ const reconnectMqtt = async (req, res) => {
 };
 
 const newconnect = async (req, res) => {
-    const { username, email, password, aioUser, aioKey, phone } = req.body;
+    const { username, fullname, email, password, aioUser, aioKey, phone } = req.body;
 
     if (!aioUser || !aioKey) {
         console.error(`User ${username} does not have Adafruit IO credentials`);
@@ -273,6 +273,7 @@ const newconnect = async (req, res) => {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const newUser = new modelUser({
                     username,
+                    fullname,
                     email,
                     password: hashedPassword,
                     role: 'user',
