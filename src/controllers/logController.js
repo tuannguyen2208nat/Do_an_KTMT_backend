@@ -177,7 +177,6 @@ const getTemp = async (req, res) => {
         let result = [];
         if (parseFloat(time) === 7) {
             result = allDates.map(date => ({ ...date }));
-            result.pop();
         }
         else if (parseFloat(time) === 30) {
             calculateAverage(allDates, 3, result);
@@ -262,7 +261,6 @@ const getHumi = async (req, res) => {
         let result = [];
         if (parseFloat(time) === 7) {
             result = allDates.map(date => ({ ...date }));
-            result.pop();
         }
         else if (parseFloat(time) === 30) {
             calculateAverage(allDates, 3, result);
