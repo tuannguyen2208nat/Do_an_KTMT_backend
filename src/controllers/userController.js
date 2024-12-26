@@ -80,7 +80,7 @@ const login = async (req, res) => {
 
 const register = async (req, res, next) => {
     try {
-        const { username, email, password, aioUser, aioKey, phone } = req.body;
+        const { fullname, username, email, password, aioUser, aioKey, phone } = req.body;
         if (!username || !fullname || !email || !password || !aioUser || !aioKey || !phone) {
             return res.status(400).json({
                 message: 'Username,fullname, email, password ,phone, AIO_USERNAME and AIO_KEY are required.',
@@ -95,7 +95,6 @@ const register = async (req, res, next) => {
                 error: 'Email or username already exists.',
             });
         }
-
         next();
     } catch (error) {
         return res.status(500).json({

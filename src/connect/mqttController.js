@@ -255,11 +255,11 @@ const newconnect = async (req, res) => {
 
     if (!aioUser || !aioKey) {
         console.error(`User ${username} does not have Adafruit IO credentials`);
-        return res.status(400).json({ message: `User ${username} does not have Adafruit IO credentials` });
+        return res.status(400).json({ error: `User ${username} does not have Adafruit IO credentials` });
     }
 
     if (clients[username]) {
-        return res.status(400).json({ message: `User ${username} already has Adafruit IO credentials` });
+        return res.status(400).json({ error: `User ${username} already has Adafruit IO credentials` });
     }
 
     try {
@@ -307,7 +307,7 @@ const newconnect = async (req, res) => {
                 }
             } catch (error) {
                 console.error('Error saving user profile after MQTT connection:', error);
-                return res.status(500).json({ message: 'Error saving user profile after successful MQTT connection' });
+                return res.status(500).json({ error: 'Error saving user profile after successful MQTT connection' });
             }
         });
 
