@@ -159,24 +159,33 @@ const subscribeToFeeds = (client, AIO_USERNAME) => {
     });
 };
 
-const disconnectMqtt = async (req, res) => {
+const disconnectMqtt = async (req, res, next) => {
     const userID = req.user.id;
     try {
-        const user = await modelUser.findById(userID);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const { currentpassword } = req.body;
+        if (!currentpassword) {
+            return res.status(400).json({
+                error: 'Current password  are required.',
+            });
         }
-
+        const user = await modelUser.findById(userID).exec();
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const isPasswordCorrect = await bcrypt.compare(currentpassword, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({ error: 'Incorrect password.' });
+        }
         const { AIO_USERNAME } = user;
         if (clients[userID]) {
-            clients[userID].end(() => {
+            clients[userID].end(false, () => {
                 console.log(`Disconnected from MQTT for user: ${AIO_USERNAME}`);
             });
             delete clients[userID];
-            return res.status(200).json({ message: `Disconnected from MQTT for user: ${AIO_USERNAME}` });
         } else {
-            return res.status(404).json({ message: 'No active MQTT connection for this user' });
+            console.warn(`No active MQTT client found for user: ${AIO_USERNAME}`);
         }
+        next();
     } catch (error) {
         console.error('Error disconnecting from MQTT:', error);
         return res.status(500).json({ message: 'Server error' });

@@ -8,6 +8,7 @@ const HumiditySensors = require('../models/HumiditySensors');
 const TemperatureSensors = require('../models/TemperatureSensors');
 const Location = require('../models/Location');
 const Schedule = require('../models/Schedule');
+const Log = require('../models/Log');
 
 const login = async (req, res) => {
     try {
@@ -286,5 +287,26 @@ const forgot_password = async (req, res) => {
     }
 }
 
+const delete_profile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        await Promise.all([
+            modelUser.findByIdAndDelete(userId),
+            TemperatureSensors.deleteMany({ userID: userId }),
+            HumiditySensors.deleteMany({ userID: userId }),
+            Location.deleteMany({ userID: userId }),
+            Relay.deleteMany({ userID: userId }),
+            Schedule.deleteMany({ userID: userId }),
+            Log.deleteMany({ userID: userId }),
+        ]);
+        return res.status(200).json({ message: 'User profile and related data deleted successfully.' });
+    }
+    catch (error) {
+        return res.status(500).json({
+            error: 'Server error',
+        });
+    }
+}
 
-module.exports = { login, register, logout, get_profile, edit_profile, change_password, forgot_password };
+
+module.exports = { login, register, logout, get_profile, edit_profile, delete_profile, change_password, forgot_password };
