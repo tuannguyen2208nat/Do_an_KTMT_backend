@@ -136,6 +136,7 @@ const set_status = async (req, res, next) => {
         req.feed = 'schedule';
         req.activity = `Schedule ${schedule.schedule_name} ${schedule.state ? 'ON' : 'OFF'}`;
         req.AIO_USERNAME = user.AIO_USERNAME;
+        req.username = user.username;
         next();
     }
     catch (error) {
