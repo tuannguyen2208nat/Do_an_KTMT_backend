@@ -90,7 +90,7 @@ const connectAllUsers = async () => {
             }
         );
 
-        clients[user._id] = client;
+        clients[user.username] = client;
 
         client.on('connect', () => {
             console.log(`Connected to MQTT for user: ${user.username}`);
@@ -177,11 +177,11 @@ const disconnectMqtt = async (req, res, next) => {
             return res.status(401).json({ error: 'Incorrect password.' });
         }
         const { AIO_USERNAME } = user;
-        if (clients[userID]) {
-            clients[userID].end(false, () => {
+        if (clients[user.username]) {
+            clients[user.username].end(false, () => {
                 console.log(`Disconnected from MQTT for user: ${AIO_USERNAME}`);
             });
-            delete clients[userID];
+            delete clients[user.username];
         } else {
             console.warn(`No active MQTT client found for user: ${AIO_USERNAME}`);
         }
@@ -205,9 +205,9 @@ const reconnectMqtt = async (req, res) => {
             return res.status(400).json({ message: `User ${user.username} does not have Adafruit IO credentials` });
         }
 
-        if (clients[userID]) {
-            clients[userID].end();
-            delete clients[userID];
+        if (clients[user.username]) {
+            clients[user.username].end();
+            delete clients[user.username];
         }
 
         const clientId = `client-${user._id}-${Math.random().toString(36).substring(7)}`;
@@ -218,7 +218,7 @@ const reconnectMqtt = async (req, res) => {
                 clientId: clientId,
             }
         );
-        clients[userID] = client;
+        clients[user.username] = client;
         client.on('connect', async () => {
             console.log(`Reconnected to MQTT for user: ${user.username}`);
             subscribeToFeeds(client, AIO_USERNAME);
@@ -327,7 +327,8 @@ const newconnect = async (req, res) => {
 
 const publishdata = async (req, res, next) => {
     const userID = req.user.id;
-    if (!clients[userID]) {
+    const username = req.username;
+    if (!clients[username]) {
         return res.status(400).json({ error: 'MQTT not connected' });
     }
     const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME, email } = req;
@@ -354,7 +355,7 @@ const publishdata = async (req, res, next) => {
         });
     }
     const feedPath = `${AIO_USERNAME}/feeds/${feed}`;
-    clients[userID].publish(feedPath, jsonData, (err) => {
+    clients[username].publish(feedPath, jsonData, (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to publish data' });
         } else {

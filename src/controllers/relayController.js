@@ -135,6 +135,7 @@ const set_status = async (req, res, next) => {
         req.feed = 'relay';
         req.activity = `Relay ${relayId} ${state ? 'ON' : 'OFF'}`;
         req.AIO_USERNAME = user.AIO_USERNAME;
+        req.username = user.username;
         next();
     }
     catch (error) {
