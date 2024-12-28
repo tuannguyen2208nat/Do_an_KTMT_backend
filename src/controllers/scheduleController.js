@@ -35,8 +35,17 @@ const add_schedule = async (req, res, next) => {
         const schedule_id = await generateUniqueScheduleId(userID);
         const schedule = new Schedule({ userID, schedule_id, schedule_name, state: false, day, time, actions });
         await schedule.save();
+        const user = await modelUser.findById(userID);
+        req.mode = 'Schedule';
+        req.scheduleid = schedule_id;
+        req.state = schedule.state;
+        req.day = schedule.day;
+        req.time = schedule.time;
+        req.actions = schedule.actions;
+        req.feed = 'schedule';
         req.activity = `Schedule ${schedule_name} added`;
-        req.scheduleId = schedule_id;
+        req.AIO_USERNAME = user.AIO_USERNAME;
+        req.username = user.username;
         next();
     } catch (error) {
         return res.status(500).json({
@@ -100,8 +109,18 @@ const set_schedule = async (req, res, next) => {
             schedule.actions = new_actions;
             result += `Actions updated. `;
         }
+        const user = await modelUser.findById(userID);
         await schedule.save();
+        req.mode = 'Schedule';
+        req.scheduleid = schedule.schedule_id;
+        req.state = schedule.state;
+        req.day = schedule.day;
+        req.time = schedule.time;
+        req.actions = schedule.actions;
+        req.feed = 'schedule';
         req.activity = result.trim();
+        req.AIO_USERNAME = user.AIO_USERNAME;
+        req.username = user.username;
         next();
     } catch (error) {
         return res.status(500).json({
@@ -157,6 +176,13 @@ const delete_schedule = async (req, res, next) => {
         if (!schedule) {
             return res.status(404).json({ error: 'Schedule not found.' });
         }
+        const user = await modelUser.findById(userID);
+        req.AIO_USERNAME = user.AIO_USERNAME;
+        req.username = user.username;
+        req.mode = 'Schedule';
+        req.scheduleid = schedule_id;
+        req.deleteid = true;
+        req.feed = 'schedule';
         const name = schedule.schedule_name;
         await schedule.deleteOne();
         req.activity = `Schedule ${name} deleted.`;

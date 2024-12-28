@@ -331,19 +331,28 @@ const publishdata = async (req, res, next) => {
     if (!clients[username]) {
         return res.status(400).json({ error: 'MQTT not connected' });
     }
-    const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME, email } = req;
+    const { feed, relayid, scheduleid, state, mode, day, time, actions, AIO_USERNAME, email, deleteid } = req;
     let jsonData;
     if (mode === 'Schedule') {
-        const status = state ? 'true' : 'false';
-        jsonData = JSON.stringify({
-            email: email,
-            mode: mode,
-            id: scheduleid,
-            state: status,
-            days: day,
-            time: time,
-            actions: actions
-        });
+        if (deleteid) {
+            jsonData = JSON.stringify({
+                email: email,
+                mode: mode,
+                id: scheduleid,
+                delete: 'true',
+            });
+        }
+        else {
+            jsonData = JSON.stringify({
+                email: email,
+                mode: mode,
+                id: scheduleid,
+                state: state ? 'true' : 'false',
+                days: day,
+                time: time,
+                actions: actions
+            });
+        }
     }
     else if (mode === 'Manual') {
         const status = state ? 'ON' : 'OFF';
