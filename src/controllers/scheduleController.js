@@ -46,6 +46,10 @@ const add_schedule = async (req, res, next) => {
         req.activity = `Schedule ${schedule_name} added`;
         req.AIO_USERNAME = user.AIO_USERNAME;
         req.username = user.username;
+        req.actions = req.actions.map(action => {
+            const { _id, ...rest } = action._doc;
+            return rest;
+        });
         next();
     } catch (error) {
         return res.status(500).json({
@@ -86,28 +90,29 @@ const set_schedule = async (req, res, next) => {
         if (!schedule) {
             return res.status(404).json({ error: 'Schedule not found.' });
         }
-
-        let result = '';
-
-        if (new_schedule_name) {
-            if (schedule.schedule_name !== new_schedule_name) {
-                schedule.schedule_name = new_schedule_name;
-                result += `Schedule name updated to ${new_schedule_name}. `;
-            }
+        let result = `Schedule '${schedule.schedule_name}' edited: `;
+        let changes = [];
+        if (new_schedule_name && schedule.schedule_name !== new_schedule_name) {
+            schedule.schedule_name = new_schedule_name;
+            changes.push(`name updated to '${new_schedule_name}'`);
         }
         if (new_day) {
             schedule.day = new_day;
-            result += `day updated to ${new_day.join(', ')}. `;
+            changes.push(`day updated to '${new_day.join(', ')}'`);
         }
-        if (new_time) {
-            if (schedule.time !== new_time) {
-                schedule.time = new_time;
-                result += `Time updated to ${new_time}. `;
-            }
+        if (new_time && schedule.time !== new_time) {
+            schedule.time = new_time;
+            changes.push(`time updated to '${new_time}'`);
         }
         if (new_actions) {
             schedule.actions = new_actions;
-            result += `Actions updated. `;
+            changes.push(`actions updated`);
+        }
+
+        if (changes.length > 0) {
+            result += changes.join('. ') + '.';
+        } else {
+            result = `No changes made to the schedule '${schedule.schedule_name}'.`;
         }
         const user = await modelUser.findById(userID);
         await schedule.save();
@@ -121,6 +126,10 @@ const set_schedule = async (req, res, next) => {
         req.activity = result.trim();
         req.AIO_USERNAME = user.AIO_USERNAME;
         req.username = user.username;
+        req.actions = req.actions.map(action => {
+            const { _id, ...rest } = action._doc;
+            return rest;
+        });
         next();
     } catch (error) {
         return res.status(500).json({
@@ -156,6 +165,10 @@ const set_status = async (req, res, next) => {
         req.activity = `Schedule ${schedule.schedule_name} ${schedule.state ? 'ON' : 'OFF'}`;
         req.AIO_USERNAME = user.AIO_USERNAME;
         req.username = user.username;
+        req.actions = req.actions.map(action => {
+            const { _id, ...rest } = action._doc;
+            return rest;
+        });
         next();
     }
     catch (error) {
