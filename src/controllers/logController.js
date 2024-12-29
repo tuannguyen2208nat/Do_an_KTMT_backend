@@ -123,8 +123,10 @@ const getTemp = async (req, res) => {
         }
 
         const endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - time + (time === '7' ? 0 : 1));
+        startDate.setHours(0, 0, 0, 0);
 
         const data = await TemperatureSensors.find({
             userID: userId,
@@ -208,8 +210,10 @@ const getHumi = async (req, res) => {
         }
 
         const endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - time + (time === '7' ? 0 : 1));
+        startDate.setHours(0, 0, 0, 0);
 
         const data = await HumiditySensors.find({
             userID: userId,
