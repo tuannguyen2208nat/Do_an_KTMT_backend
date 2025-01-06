@@ -23,6 +23,9 @@ const formatDate = (date) => {
 };
 
 const saveData = async (email, type, data, date, mode = undefined) => {
+    if (typeof date === 'string') {
+        date = new Date(date);
+    }
     const user = await modelUser.findOne({ email: email });
     if (!user) {
         return;
