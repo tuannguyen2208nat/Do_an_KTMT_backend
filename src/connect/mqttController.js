@@ -24,8 +24,16 @@ const formatDate = (date) => {
 
 const saveData = async (email, type, data, date, mode = undefined) => {
     if (typeof date === 'string') {
-        date = new Date(date);
+        const [time, datePart] = date.split(' ');
+        const [day, month, year] = datePart.split('/');
+        if (!day || !month || !year) {
+            console.log('Invalid date format');
+        } else {
+            const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${time}:00`;
+            date = new Date(formattedDate);
+        }
     }
+
     const user = await modelUser.findOne({ email: email });
     if (!user) {
         return;
@@ -52,8 +60,17 @@ const saveData = async (email, type, data, date, mode = undefined) => {
         }
         if (mode === 'Temp_Humi') {
             const [temp, humi] = data.split('-');
-            sensorQueue.add({ userID: user.id, sensor: 'temperature', temp, date });
-            sensorQueue.add({ userID: user.id, sensor: 'humidity', humi, date });
+            if (isNaN(temp) || isNaN(humi)) {
+                console.error('Invalid temperature or humidity data');
+                return;
+            }
+
+            if (parseFloat(temp) === 0 || parseFloat(humi) === 0) {
+                console.error("Temperature or humidity data is zero");
+                return;
+            }
+            sensorQueue.add({ userID: user.id, sensor: 'temperature', data: parseFloat(temp), date });
+            sensorQueue.add({ userID: user.id, sensor: 'humidity', data: parseFloat(humi), date });
         }
         else if (mode === 'location') {
             sensorQueue.add({ userID: user.id, sensor: 'location', data, date });
